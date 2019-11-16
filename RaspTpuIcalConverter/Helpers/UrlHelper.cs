@@ -15,7 +15,7 @@ namespace RaspTpuIcalConverter.Helpers
         public string GetRequestContent(string url)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
-            //request.Proxy = new WebProxy(new Uri("http://10.0.25.3:8080")) { UseDefaultCredentials = true };
+            request.Proxy = new WebProxy(new Uri("http://10.0.25.3:8080")) { UseDefaultCredentials = true };
             var response = (HttpWebResponse)request.GetResponse();
 
             if (response.StatusCode != HttpStatusCode.OK)
