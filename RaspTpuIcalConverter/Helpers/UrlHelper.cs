@@ -5,13 +5,26 @@ using System.Text;
 
 namespace RaspTpuIcalConverter.Helpers
 {
+    /// <summary>
+    /// Набор функций для работы с Url и сетью.
+    /// </summary>
     public class UrlHelper
     {
+        /// <summary>
+        /// Проверяет, является ли строка абсолютным Url.
+        /// </summary>
+        /// <param name="url">Строка, содержащая url.</param>
+        /// <returns>Является ли строка абсолютным Url.</returns>
         public bool IsAbsoluteUrl(string url)
         {
             return Uri.TryCreate(url, UriKind.Absolute, out _);
         }
 
+        /// <summary>
+        /// Получает содержимое по Url и возвращает его в виде строки.
+        /// </summary>
+        /// <param name="url">Адрес для получения контента.</param>
+        /// <returns>Контент.</returns>
         public string GetRequestContent(string url)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);

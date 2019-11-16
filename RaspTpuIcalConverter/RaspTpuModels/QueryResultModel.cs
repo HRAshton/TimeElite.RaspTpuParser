@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace RaspTpuIcalConverter.RaspTpuModels
 {
+    /// <summary>
+    ///     Модель результата поиска.
+    ///     <example>https://rasp.tpu.ru/select/search/main.html?q=105</example>
+    /// </summary>
     internal class QueryResultModel
     {
         public List<QueryResultItemModel> Result { get; set; }
-    }
-
-    internal class QueryResultItemModel
-    {
-        public ushort Id { get; set; }
-        public string Text { get; set; }
-        public string Html { get; set; }
-        public string Url { get; set; }
     }
 }

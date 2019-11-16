@@ -11,6 +11,9 @@ using Calendar = Ical.Net.Calendar;
 
 namespace RaspTpuIcalConverter.Parsers
 {
+    /// <summary>
+    /// Парсер для html-страницы сайта rasp.tpu.ru.
+    /// </summary>
     internal class PageParser
     {
         private readonly List<string> StringTimeAssociation = new List<string>(new[]
@@ -18,6 +21,21 @@ namespace RaspTpuIcalConverter.Parsers
             "8:30", "10:25", "12:20", "14:15", "16:10", "18:05", "20:00"
         });
 
+        /// <summary>
+        /// Преобразует строку с html-кодом страницы в объект типа <see cref="Calendar"/> (Ical.Net).
+        /// </summary>
+        /// У календаря есть поле Events, содержащее события. У события заполняются только атрибуты:
+        /// <list type="bullet">
+        /// <item> Name </item>
+        /// <item> Contacts </item>
+        /// <item> Location </item>
+        /// <item> Description </item>
+        /// <item> DtStart </item>
+        /// <item> DtEnd </item>
+        /// <item> Duration </item>
+        /// </list>
+        /// <param name="html">Строка с html-кодом страницы.</param>
+        /// <returns>Календарь с названием и событиями.</returns>
         public Calendar ParsePage(string html)
         {
             var doc = new HtmlDocument();

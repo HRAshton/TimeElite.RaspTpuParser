@@ -14,14 +14,31 @@ namespace RaspTpuIcalConverter
         private readonly UrlHelper _urlHelper;
         private readonly PageParser _pageParser;
 
-
+        /// <summary>
+        /// Конструктор.
+        /// </summary>
         public RaspTruIcalConverter()
         {
             _pageParser = new PageParser();
             _urlHelper = new UrlHelper();
         }
 
-
+        /// <summary>
+        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="Calendar" />
+        ///     (Ical.Net).
+        ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
+        ///     <list type="bullet">
+        ///         <item> Name </item>
+        ///         <item> Contacts </item>
+        ///         <item> Location </item>
+        ///         <item> Description </item>
+        ///         <item> DtStart </item>
+        ///         <item> DtEnd </item>
+        ///         <item> Duration </item>
+        ///     </list>
+        /// </summary>
+        /// <param name="pageHtml">Строка с html-кодом страницы.</param>
+        /// <returns>Календарь с названием и событиями.</returns>
         public Calendar GetByHtml(string pageHtml)
         {
             var result = _pageParser.ParsePage(pageHtml);
@@ -29,6 +46,24 @@ namespace RaspTpuIcalConverter
             return result;
         }
 
+        /// <summary>
+        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="Calendar" />
+        ///     (Ical.Net).
+        ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
+        ///     <list type="bullet">
+        ///         <item> Name </item>
+        ///         <item> Contacts </item>
+        ///         <item> Location </item>
+        ///         <item> Description </item>
+        ///         <item> DtStart </item>
+        ///         <item> DtEnd </item>
+        ///         <item> Duration </item>
+        ///     </list>
+        /// </summary>
+        /// <param name="link">Url получаемой страницы.</param>
+        /// <param name="before">Количество календарей до переданного, события которых нужно включить.</param>
+        /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
+        /// <returns>Календарь с названием и событиями.</returns>
         public Calendar GetByLink(string link, byte before = 0, byte after = 0)
         {
             if (!_urlHelper.IsAbsoluteUrl(link)) link = "https://rasp.tpu.ru" + link;
@@ -39,6 +74,27 @@ namespace RaspTpuIcalConverter
             return mainCalendar;
         }
 
+        /// <summary>
+        ///     Получает страницу по точному совпадению в поиске (<paramref name="query" />) и преобразует строку с html-кодом
+        ///     страницы в объект типа <see cref="Calendar" /> (Ical.Net).
+        ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
+        ///     <list type="bullet">
+        ///         <item> Name </item>
+        ///         <item> Contacts </item>
+        ///         <item> Location </item>
+        ///         <item> Description </item>
+        ///         <item> DtStart </item>
+        ///         <item> DtEnd </item>
+        ///         <item> Duration </item>
+        ///     </list>
+        /// </summary>
+        /// <param name="query">
+        ///     Текст поиска (можно проверить на основной странице rasp.tpu.ru), первое точное совпадение которого
+        ///     учитывается.
+        /// </param>
+        /// <param name="before">Количество календарей до переданного, события которых нужно включить.</param>
+        /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
+        /// <returns>Календарь с названием и событиями.</returns>
         public Calendar GetByQuery(string query, byte before = 0, byte after = 0)
         {
             var queryResultJson =
