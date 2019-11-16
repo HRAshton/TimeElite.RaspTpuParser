@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Company>EliteApp</Company>
+    <Authors>HRAshton</Authors>
+    <Product>TimeElite</Product>
+    <RepositoryUrl>https://github.com/HRAshton/TimeElite.RaspTpuParser</RepositoryUrl>
+    <RepositoryType>Public</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>TimeElite.RaspTpuIcalConverter</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
