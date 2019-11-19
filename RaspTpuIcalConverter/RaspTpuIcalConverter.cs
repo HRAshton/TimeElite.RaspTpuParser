@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Ical.Net;
 using Newtonsoft.Json;
 using RaspTpuIcalConverter.Helpers;
@@ -11,16 +12,16 @@ namespace RaspTpuIcalConverter
 {
     public class RaspTruIcalConverter
     {
-        private readonly UrlHelper _urlHelper;
         private readonly PageParser _pageParser;
+        private readonly UrlHelper _urlHelper;
 
         /// <summary>
-        /// Конструктор.
+        ///     Конструктор.
         /// </summary>
-        public RaspTruIcalConverter()
+        public RaspTruIcalConverter(HttpClient httpClient = null)
         {
             _pageParser = new PageParser();
-            _urlHelper = new UrlHelper();
+            _urlHelper = new UrlHelper(httpClient ?? new HttpClient());
         }
 
         /// <summary>
@@ -97,11 +98,13 @@ namespace RaspTpuIcalConverter
         /// <returns>Календарь с названием и событиями.</returns>
         public Calendar GetByQuery(string query, byte before = 0, byte after = 0)
         {
-            var queryResultJson =
-                _urlHelper.GetRequestContent("https://rasp.tpu.ru/select/search/main.html?q=" + query);
+            var queryUrl = "https://rasp.tpu.ru/select/search/main.html?q=" + query;
+            var queryResultJson = _urlHelper.GetRequestContent(queryUrl);
+
             var queryResult = JsonConvert.DeserializeObject<QueryResultModel>(queryResultJson);
-            var trueResult =
-                queryResult.Result.FirstOrDefault(x => string.Compare(x.Text, 0, query, 0, x.Text.Length, true) == 0);
+
+            var trueResult = queryResult.Result
+                .FirstOrDefault(item => string.Compare(item.Text, 0, query, 0, item.Text.Length, true) == 0);
 
             if (trueResult == null) return null;
 
@@ -147,7 +150,7 @@ namespace RaspTpuIcalConverter
         private Calendar GetJoinedCalendarByUrls(IEnumerable<string> urls)
         {
             var calendars = urls
-                .Select(_urlHelper.GetRequestContent)
+                .Select(x => _urlHelper.GetRequestContent(x))
                 .Select(GetByHtml)
                 .ToList();
 

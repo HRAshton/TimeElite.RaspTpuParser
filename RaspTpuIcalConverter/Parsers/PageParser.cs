@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
@@ -81,9 +83,19 @@ namespace RaspTpuIcalConverter.Parsers
             var rows = tbody.GetChildElementsList();
 
             var holydays = GetHolydays(rows);
+
             var events = ParseRow(rows.First(), holydays, mondayDate, 0);
-            events.AddRange(rows.Skip(1)
-                .SelectMany((row, rowIndex) => ParseRow(row, holydays, mondayDate, rowIndex + 1)));
+            var tasks = new List<Task<List<CalendarEvent>>>();
+            for (var rowIndex = 1; rowIndex < rows.Count; rowIndex++)
+            {
+                var row = rows[rowIndex];
+                var task = Task.Run(() => ParseRow(row, holydays, mondayDate, rowIndex + 1));
+                tasks.Add(task);
+            }
+            Task.WhenAll(tasks)
+                .Result
+                .ToList()
+                .ForEach(events.AddRange);
 
             var calendar = new Calendar
             {

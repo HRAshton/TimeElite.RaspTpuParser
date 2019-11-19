@@ -1,17 +1,27 @@
 ﻿using System;
-using System.IO;
-using System.Net;
-using System.Text;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace RaspTpuIcalConverter.Helpers
 {
     /// <summary>
-    /// Набор функций для работы с Url и сетью.
+    ///     Набор функций для работы с Url и сетью.
     /// </summary>
-    public class UrlHelper
+    internal class UrlHelper
     {
         /// <summary>
-        /// Проверяет, является ли строка абсолютным Url.
+        ///     Конструктор.
+        /// </summary>
+        /// <param name="httpClient">Клиент для запросов (с прокси, если надо).</param>
+        public UrlHelper(HttpClient httpClient)
+        {
+            HttpClient = httpClient;
+        }
+
+        private HttpClient HttpClient { get; }
+
+        /// <summary>
+        ///     Проверяет, является ли строка абсолютным Url.
         /// </summary>
         /// <param name="url">Строка, содержащая url.</param>
         /// <returns>Является ли строка абсолютным Url.</returns>
@@ -21,34 +31,17 @@ namespace RaspTpuIcalConverter.Helpers
         }
 
         /// <summary>
-        /// Получает содержимое по Url и возвращает его в виде строки.
+        ///     Получает содержимое по Url и возвращает его в виде строки.
         /// </summary>
         /// <param name="url">Адрес для получения контента.</param>
         /// <returns>Контент.</returns>
         public string GetRequestContent(string url)
         {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Proxy = new WebProxy(new Uri("http://10.0.25.3:8080")) { UseDefaultCredentials = true };
-            var response = (HttpWebResponse)request.GetResponse();
+            var response = HttpClient.GetStringAsync(url);
 
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                return null;
-            }
+            var result = response.Result;
 
-            var receiveStream = response.GetResponseStream() ?? throw new NullReferenceException();
-
-            var readStream = response.CharacterSet == null
-                ? new StreamReader(receiveStream)
-                : new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
-
-            var data = readStream.ReadToEnd();
-
-            response.Close();
-            readStream.Close();
-
-            return data;
-
+            return result;
         }
     }
 }

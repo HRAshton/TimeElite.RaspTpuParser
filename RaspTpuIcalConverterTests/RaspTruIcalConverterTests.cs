@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using Ical.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,7 +18,14 @@ namespace RaspTpuIcalConverter.Tests
         [TestInitialize]
         public void Init()
         {
-            _raspTruIcalConverter = new RaspTruIcalConverter();
+            var handler = new HttpClientHandler
+            {
+                Proxy = new WebProxy(new Uri("http://10.0.25.3:8080")) {UseDefaultCredentials = true},
+                DefaultProxyCredentials = CredentialCache.DefaultCredentials
+            };
+            var client = new HttpClient(handler);
+
+            _raspTruIcalConverter = new RaspTruIcalConverter(client);
         }
 
         [TestMethod]
