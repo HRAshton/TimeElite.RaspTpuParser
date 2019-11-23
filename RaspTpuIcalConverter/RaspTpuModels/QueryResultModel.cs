@@ -8,6 +8,6 @@ namespace RaspTpuIcalConverter.RaspTpuModels
     /// </summary>
     internal class QueryResultModel
     {
-        public List<QueryResultItemModel> Result { get; set; }
+        public IEnumerable<QueryResultItemModel> Result { get; set; }
     }
 }

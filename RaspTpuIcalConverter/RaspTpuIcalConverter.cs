@@ -98,12 +98,9 @@ namespace RaspTpuIcalConverter
         /// <returns>Календарь с названием и событиями.</returns>
         public Calendar GetByQuery(string query, byte before = 0, byte after = 0)
         {
-            var queryUrl = "https://rasp.tpu.ru/select/search/main.html?q=" + query;
-            var queryResultJson = _urlHelper.GetRequestContent(queryUrl);
+            var searchResults = GetSearchResults(query);
 
-            var queryResult = JsonConvert.DeserializeObject<QueryResultModel>(queryResultJson);
-
-            var trueResult = queryResult.Result
+            var trueResult = searchResults
                 .FirstOrDefault(item => string.Compare(item.Text, 0, query, 0, item.Text.Length, true) == 0);
 
             if (trueResult == null) return null;
@@ -111,6 +108,21 @@ namespace RaspTpuIcalConverter
             var calendar = GetByLink(trueResult.Url, before, after);
 
             return calendar;
+        }
+
+        /// <summary>
+        ///     Получает результат поиска на сайте rasp.tpu.ru аналогично полю ввода на главной странице.
+        /// </summary>
+        /// <param name="query">Запрос для поиска.</param>
+        /// <returns>Перечисление результатов.</returns>
+        public IEnumerable<QueryResultItemModel> GetSearchResults(string query)
+        {
+            var queryUrl = "https://rasp.tpu.ru/select/search/main.html?q=" + query;
+            var queryResultJson = _urlHelper.GetRequestContent(queryUrl);
+            var queryResult = JsonConvert.DeserializeObject<QueryResultModel>(queryResultJson);
+            var result = queryResult.Result;
+
+            return result;
         }
 
 

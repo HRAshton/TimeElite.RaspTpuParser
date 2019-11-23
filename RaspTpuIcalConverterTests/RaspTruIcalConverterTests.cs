@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RaspTpuIcalConverter;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,7 +21,7 @@ namespace RaspTpuIcalConverter.Tests
         {
             var handler = new HttpClientHandler
             {
-                Proxy = new WebProxy(new Uri("http://10.0.25.3:8080")) {UseDefaultCredentials = true},
+                Proxy = new WebProxy(new Uri("http://10.0.25.3:8080")) { UseDefaultCredentials = true },
                 DefaultProxyCredentials = CredentialCache.DefaultCredentials
             };
             var client = new HttpClient(handler);
@@ -63,6 +64,30 @@ namespace RaspTpuIcalConverter.Tests
             // У всех событий есть имена.
             var elementsWithEmptyNames = result.Events.Where(x => string.IsNullOrEmpty(x.Name));
             Assert.IsFalse(elementsWithEmptyNames.Any());
+        }
+
+        [TestMethod()]
+        public void GetByQueryTest_ReturnsEmpty()
+        {
+            var result = _raspTruIcalConverter.GetSearchResults("Hello There!");
+
+            Assert.IsFalse(result.Any());
+        }
+
+        [TestMethod()]
+        public void GetByQueryTest_ReturnsSingleResult()
+        {
+            var result = _raspTruIcalConverter.GetSearchResults("8б61");
+
+            Assert.IsTrue(result.Count() == 1);
+        }
+
+        [TestMethod()]
+        public void GetByQueryTest_ResultExists()
+        {
+            var result = _raspTruIcalConverter.GetSearchResults("105");
+
+            Assert.IsTrue(result.Count(x => x.Id == 11840) == 1);
         }
     }
 }
