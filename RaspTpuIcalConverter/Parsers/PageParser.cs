@@ -29,6 +29,7 @@ namespace RaspTpuIcalConverter.Parsers
         /// У календаря есть поле Events, содержащее события. У события заполняются только атрибуты:
         /// <list type="bullet">
         /// <item> Name </item>
+        /// <item> Categories </item>
         /// <item> Contacts </item>
         /// <item> Location </item>
         /// <item> Description </item>
@@ -186,7 +187,7 @@ namespace RaspTpuIcalConverter.Parsers
                     ? ""
                     : linkNodes[1].InnerText.Trim() + '-' + linkNodes[2].InnerText.Trim();
 
-                var calendarEvent = CreateEvent(dateTime, shortName, new[] {teacher, name}, location, name, type);
+                var calendarEvent = CreateEvent(dateTime, shortName, new[] {teacher, name}, location, name, type); // TODO
 
                 events.Add(calendarEvent);
             }
@@ -202,6 +203,7 @@ namespace RaspTpuIcalConverter.Parsers
             return new CalendarEvent
             {
                 Name = shortName,
+                Categories = new List<string> { type },
                 Contacts = new List<string>(teacher),
                 Location = location,
                 Description = $"Полное название: {name}\r\nТип: {type}",

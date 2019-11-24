@@ -30,6 +30,7 @@ namespace RaspTpuIcalConverter
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
         ///         <item> Name </item>
+        ///         <item> Categories </item>
         ///         <item> Contacts </item>
         ///         <item> Location </item>
         ///         <item> Description </item>
@@ -53,6 +54,7 @@ namespace RaspTpuIcalConverter
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
         ///         <item> Name </item>
+        ///         <item> Categories </item>
         ///         <item> Contacts </item>
         ///         <item> Location </item>
         ///         <item> Description </item>
@@ -81,6 +83,7 @@ namespace RaspTpuIcalConverter
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
         ///         <item> Name </item>
+        ///         <item> Categories </item>
         ///         <item> Contacts </item>
         ///         <item> Location </item>
         ///         <item> Description </item>
