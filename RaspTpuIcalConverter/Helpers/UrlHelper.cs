@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace RaspTpuIcalConverter.Helpers
 {
@@ -42,6 +42,29 @@ namespace RaspTpuIcalConverter.Helpers
             var result = response.Result;
 
             return result;
+        }
+
+        /// <summary>
+        ///     Получает ссылку после переадресации.
+        /// </summary>
+        /// <param name="url">Входной url.</param>
+        /// <returns>Ссылка после переадресации.</returns>
+        public string GetFinalRedirect(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return url;
+
+            try
+            {
+                var resp = HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).Result;
+
+                return resp.RequestMessage.RequestUri.AbsoluteUri;
+            }
+            catch (WebException)
+            {
+                // Return the last known good URL
+                return url;
+            }
         }
     }
 }

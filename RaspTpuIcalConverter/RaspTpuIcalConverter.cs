@@ -102,10 +102,12 @@ namespace RaspTpuIcalConverter
 
             var trueResult = searchResults
                 .FirstOrDefault(item => string.Compare(item.Text, 0, query, 0, item.Text.Length, true) == 0);
-
             if (trueResult == null) return null;
 
-            var calendar = GetByLink(trueResult.Url, before, after);
+            var hashedLink = "https://rasp.tpu.ru" + trueResult.Url;
+            var trueUrl = _urlHelper.GetFinalRedirect(hashedLink);
+
+            var calendar = GetByLink(trueUrl, before, after);
 
             return calendar;
         }
