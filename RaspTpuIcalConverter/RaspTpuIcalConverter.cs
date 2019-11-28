@@ -78,6 +78,35 @@ namespace RaspTpuIcalConverter
         }
 
         /// <summary>
+        ///     Получает страницу по hash и возвращает расписание - объект типа <see cref="Calendar" />
+        ///     (Ical.Net).
+        ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
+        ///     <list type="bullet">
+        ///         <item> Name </item>
+        ///         <item> Categories </item>
+        ///         <item> Contacts </item>
+        ///         <item> Location </item>
+        ///         <item> Description </item>
+        ///         <item> DtStart </item>
+        ///         <item> DtEnd </item>
+        ///         <item> Duration </item>
+        ///     </list>
+        /// </summary>
+        /// <param name="hash">TODO</param>
+        /// <param name="before">Количество календарей до переданного, события которых нужно включить.</param>
+        /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
+        /// <returns>Календарь с названием и событиями.</returns>
+        public Calendar GetByHash(string hash, byte before = 0, byte after = 0)
+        {
+            var hashedLink = "https://rasp.tpu.ru/redirect/kalendar.html?hash=" + hash;
+            var trueUrl = _urlHelper.GetFinalRedirect(hashedLink);
+            var urls = GetUrls(trueUrl, before, after);
+            var mainCalendar = GetJoinedCalendarByUrls(urls);
+
+            return mainCalendar;
+        }
+
+        /// <summary>
         ///     Получает страницу по точному совпадению в поиске (<paramref name="query" />) и преобразует строку с html-кодом
         ///     страницы в объект типа <see cref="Calendar" /> (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
