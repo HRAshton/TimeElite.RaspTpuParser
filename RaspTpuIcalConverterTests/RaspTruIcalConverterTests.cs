@@ -66,6 +66,19 @@ namespace RaspTpuIcalConverter.Tests
             Assert.IsFalse(elementsWithEmptyNames.Any());
         }
 
+        [TestMethod]
+        public void GetByHtmlTest_Rodina_ConsultationIsNotEmpty()
+        {
+            const string url = "https://rasp.tpu.ru/user_296870/2019/13/view.html";
+            var result = _raspTruIcalConverter.GetByLink(url);
+
+            // Вернулся валидный календарь.
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOfType(result, typeof(Calendar));
+
+            Assert.IsTrue(result.Events.First().Name == "Консультация");
+        }
+
         [TestMethod()]
         public void GetByQueryTest_ReturnsEmpty()
         {

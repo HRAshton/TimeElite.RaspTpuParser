@@ -149,6 +149,8 @@ namespace RaspTpuIcalConverter.Parsers
 
         private static IEnumerable<CalendarEvent> ParseCell(HtmlNode td, DateTime dateTime)
         {
+            var locationRegex = new Regex(@"к. ([^\s]+), ауд. ([^\s]+)");
+
             var isEmptyCell = !td.ChildNodes.Any();
             if (isEmptyCell) return new List<CalendarEvent>();
 
@@ -175,17 +177,39 @@ namespace RaspTpuIcalConverter.Parsers
                     bWithType = hrGroups[j].SelectMany(x => x.ChildNodes).FirstOrDefault(x => x.Name == "b");
                     if (bWithType != null) break;
                 }
+                var name = spanWithName?.GetAttributeValue("title", string.Empty).Trim() ?? string.Empty;
 
+                var shortName = spanWithName?.InnerText.Trim() ?? string.Empty;
+
+                if (shortName == string.Empty)
+                {
+                    for (var j = i; j >= 0; j--)
+                    {
+                        shortName = new string(hrGroups[j]
+                            .Select(x => x.InnerText)
+                            .FirstOrDefault(x => x.Contains('('))
+                            ?.TakeWhile(ch => ch != '(')
+                            .SkipLast(1) // space
+                            .ToArray());
+
+                        if (shortName != string.Empty) break;
+                    }
+                }
+                
+                var type = bWithType?.InnerText.Trim() ?? string.Empty;
                 var linkNodes = group.SelectMany(x => x.ChildNodes).Where(x => x.Name == "a").ToArray();
+                var teacher = linkNodes.Any() ? linkNodes[0].InnerText.Trim() : string.Empty;
 
-                var name = spanWithName?.GetAttributeValue("title", "").Trim() ?? "";
-                var shortName = spanWithName?.InnerText.Trim() ?? "";
-                var type = bWithType?.InnerText.Trim() ?? "";
-
-                var teacher = linkNodes.Any() ? linkNodes[0].InnerText.Trim() : "";
-                var location = linkNodes.Length < 3
-                    ? ""
-                    : linkNodes[1].InnerText.Trim() + '-' + linkNodes[2].InnerText.Trim();
+                var locationFragments = group.Select(x => locationRegex.Match(x.InnerText))
+                    .FirstOrDefault(x => x.Success)
+                    ?.Groups
+                    .Values
+                    .Skip(1)
+                    .Select(x => x.Value)
+                    .ToArray();
+                var location = locationFragments != null
+                    ? string.Join('-', locationFragments) 
+                    : string.Empty;
 
                 var calendarEvent = CreateEvent(dateTime, shortName, new[] {teacher, name}, location, name, type); // TODO
 

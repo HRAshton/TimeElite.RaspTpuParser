@@ -9,14 +9,14 @@
     <RepositoryType>Public</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>TimeElite.RaspTpuIcalConverter</PackageId>
-    <Version>1.1.1</Version>
-    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <Version>1.1.3</Version>
+    <AssemblyVersion>1.1.3.0</AssemblyVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>HRAshton</Copyright>
     <Description>Парсер расписания Томского политехнического университета (http://rasp.tpu.ru)</Description>
     <NeutralLanguage>ru</NeutralLanguage>
-    <PackageReleaseNotes>- добавлен метод получения результатов поиска;</PackageReleaseNotes>
+    <PackageReleaseNotes>- добавлена обработка ситуации неправильного парсинга консультаций;</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
