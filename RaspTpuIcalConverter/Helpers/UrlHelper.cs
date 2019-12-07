@@ -1,28 +1,27 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace RaspTpuIcalConverter.Helpers
 {
-    /// <summary>
-    ///     Набор функций для работы с Url и сетью.
-    /// </summary>
+    /// <summary>Набор функций для работы с Url и сетью.</summary>
     internal class UrlHelper
     {
-        /// <summary>
-        ///     Конструктор.
-        /// </summary>
+        /// <summary>Конструктор.</summary>
         /// <param name="httpClient">Клиент для запросов (с прокси, если надо).</param>
-        public UrlHelper(HttpClient httpClient)
+        /// <param name="memoryCache">Кэш.</param>
+        public UrlHelper(HttpClient httpClient, IMemoryCache memoryCache)
         {
-            HttpClient = httpClient;
+            _httpClient = httpClient;
+            _memoryCache = memoryCache;
         }
 
-        private HttpClient HttpClient { get; }
+        private readonly HttpClient _httpClient;
+        private readonly IMemoryCache _memoryCache;
 
-        /// <summary>
-        ///     Проверяет, является ли строка абсолютным Url.
-        /// </summary>
+
+        /// <summary>Проверяет, является ли строка абсолютным Url.</summary>
         /// <param name="url">Строка, содержащая url.</param>
         /// <returns>Является ли строка абсолютным Url.</returns>
         public bool IsAbsoluteUrl(string url)
@@ -30,23 +29,27 @@ namespace RaspTpuIcalConverter.Helpers
             return Uri.TryCreate(url, UriKind.Absolute, out _);
         }
 
-        /// <summary>
-        ///     Получает содержимое по Url и возвращает его в виде строки.
-        /// </summary>
+        /// <summary>Получает содержимое по Url и возвращает его в виде строки.</summary>
         /// <param name="url">Адрес для получения контента.</param>
+        /// <param name="cacheTime">Время действительности кэша.</param>
         /// <returns>Контент.</returns>
-        public string GetRequestContent(string url)
+        public string GetRequestContent(string url, TimeSpan cacheTime)
         {
-            var response = HttpClient.GetStringAsync(url);
+            var response =  _memoryCache.GetOrCreate($"{url}", entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = cacheTime;
+                var res = _httpClient.GetStringAsync(url);
+
+                return res;
+            });
+                
 
             var result = response.Result;
 
             return result;
         }
 
-        /// <summary>
-        ///     Получает ссылку после переадресации.
-        /// </summary>
+        /// <summary>Получает ссылку после переадресации.</summary>
         /// <param name="url">Входной url.</param>
         /// <returns>Ссылка после переадресации.</returns>
         public string GetFinalRedirect(string url)
@@ -56,7 +59,7 @@ namespace RaspTpuIcalConverter.Helpers
 
             try
             {
-                var resp = HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).Result;
+                var resp = _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).Result;
 
                 return resp.RequestMessage.RequestUri.AbsoluteUri;
             }

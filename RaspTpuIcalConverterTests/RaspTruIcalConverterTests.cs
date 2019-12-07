@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Ical.Net;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable once CheckNamespace
@@ -15,6 +16,7 @@ namespace RaspTpuIcalConverter.Tests
     public class RaspTruIcalConverterTests
     {
         private RaspTruIcalConverter _raspTruIcalConverter;
+        private IMemoryCache _memoryCache;
 
         [TestInitialize]
         public void Init()
@@ -27,6 +29,7 @@ namespace RaspTpuIcalConverter.Tests
             var client = new HttpClient(handler);
 
             _raspTruIcalConverter = new RaspTruIcalConverter(client);
+            _memoryCache = new MemoryCache(new MemoryCacheOptions());
         }
 
         [TestMethod]
