@@ -8,6 +8,7 @@ using HtmlAgilityPack;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using RaspTpuIcalConverter.Extensions;
+using RaspTpuIcalConverter.Helpers;
 using Calendar = Ical.Net.Calendar;
 
 namespace RaspTpuIcalConverter.Parsers
@@ -43,14 +44,14 @@ namespace RaspTpuIcalConverter.Parsers
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
+            var decryptor = new RaspTpuDecryptor();
+            decryptor.DecryptAll(ref doc);
+
             var tableNode = doc.GetElementbyId("raspisanie-table")
                 .ChildNodes.FirstOrDefault(node => node.NodeType == HtmlNodeType.Element);
             var monday = GetMonday(tableNode);
 
-            var name = doc.DocumentNode
-                .SelectSingleNode("//h5[@class=\"panel-title\"]").InnerText
-                .Trim();
-            name = Regex.Replace(name, @"\s+", @" ");
+            var name = ParseCalendarName(doc);
 
             var tbody = tableNode // table
                 ?.ChildNodes
@@ -58,6 +59,23 @@ namespace RaspTpuIcalConverter.Parsers
             var calendar = GetCalendar(monday, tbody, name);
 
             return calendar;
+        }
+
+        private static string ParseCalendarName(HtmlDocument doc)
+        {
+            var title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText
+                .Split("/")
+                .FirstOrDefault() 
+                ?? "[ ?? ]";
+
+            var name = title.Replace("«", string.Empty).Replace("»", string.Empty);
+            name = name.Replace("Расписание группы", string.Empty);
+            name = name.Replace("Расписание для аудитории", string.Empty);
+            name = name.Replace("Расписание для преподавателя", string.Empty);
+
+            name = Regex.Replace(name, @"\s+", " ").Trim();
+
+            return name;
         }
 
         private static DateTime GetMonday(HtmlNode tableNode)

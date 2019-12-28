@@ -50,10 +50,10 @@ namespace RaspTpuIcalConverter.Tests
         }
 
         [TestMethod]
-        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8d91_2019_10.html")]
+        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8v91_2019_17.html")]
         public void GetByHtmlTest_8d91mock_TrueCalendar()
         {
-            const string path = @"Asserts\8d91_2019_10.html";
+            const string path = @"Asserts\8v91_2019_17.html";
             var html = File.ReadAllText(path);
             var result = _raspTruIcalConverter.GetByHtml(html);
 
@@ -63,6 +63,7 @@ namespace RaspTpuIcalConverter.Tests
 
             // Имя календаря не содержит двух пробелов подряд.
             Assert.IsFalse(Regex.IsMatch(result.Name, @"\s\s"));
+            Assert.IsFalse(result.Name.Length < 2);
 
             // У всех событий есть имена.
             var elementsWithEmptyNames = result.Events.Where(x => string.IsNullOrEmpty(x.Name));
@@ -82,7 +83,7 @@ namespace RaspTpuIcalConverter.Tests
             Assert.IsTrue(result.Events.First().Name == "Консультация");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetByQueryTest_ReturnsEmpty()
         {
             var result = _raspTruIcalConverter.GetSearchResults("Hello There!");
@@ -90,7 +91,7 @@ namespace RaspTpuIcalConverter.Tests
             Assert.IsFalse(result.Any());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetByQueryTest_ReturnsSingleResult()
         {
             var result = _raspTruIcalConverter.GetSearchResults("8б61");
@@ -98,12 +99,12 @@ namespace RaspTpuIcalConverter.Tests
             Assert.IsTrue(result.Count() == 1);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetByQueryTest_ResultExists()
         {
-            var result = _raspTruIcalConverter.GetSearchResults("105");
+            var result = _raspTruIcalConverter.GetSearchResults("это71п");
 
-            Assert.IsTrue(result.Count(x => x.Id == 11840) == 1);
+            Assert.IsTrue(result.Count(x => x.Id == 11047) == 1);
         }
     }
 }
