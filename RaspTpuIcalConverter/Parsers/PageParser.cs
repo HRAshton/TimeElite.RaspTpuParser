@@ -260,12 +260,11 @@ namespace RaspTpuIcalConverter.Parsers
                 .ChildNodes
                 .Where(x => x.NodeType == HtmlNodeType.Element);
 
-            var trimChars = new[] {' ', '\r', '\n'};
             var timeCellSkipped = firstRowTds.Skip(1);
             var result = timeCellSkipped
-                .Select((node, index) => new
+                .Select((cell, index) => new
                 {
-                    IsHolyday = node.InnerText.Trim(trimChars) == "праздничный",
+                    IsHolyday = cell.Attributes["rowspan"]?.Value == "7",
                     Index = index
                 })
                 .Where(x => x.IsHolyday)

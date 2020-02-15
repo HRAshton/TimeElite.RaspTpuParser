@@ -35,10 +35,9 @@ namespace RaspTpuIcalConverter.Tests
         [TestMethod]
         public void GetByQueryTest_RightGroupNameExample_NotNullGrigorianCalendarReturned()
         {
-            object result = _raspTruIcalConverter.GetByQuery("8б61");
-
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(Calendar));
+            var result = _raspTruIcalConverter.GetByQuery("8б61");
+            
+            CheckCommonHealth(result);
         }
 
         [TestMethod]
@@ -56,18 +55,21 @@ namespace RaspTpuIcalConverter.Tests
             const string path = @"Asserts\8v91_2019_17.html";
             var html = File.ReadAllText(path);
             var result = _raspTruIcalConverter.GetByHtml(html);
+            
+            CheckCommonHealth(result);
+        }
 
-            // Вернулся валидный календарь.
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(Calendar));
+        [TestMethod]
+        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8b61_2019_26.html")]
+        public void GetByHtmlTest_8b61mock_TrueCalendar()
+        {
+            const string path = @"Asserts\8b61_2019_26.html";
+            var html = File.ReadAllText(path);
+            var result = _raspTruIcalConverter.GetByHtml(html);
 
-            // Имя календаря не содержит двух пробелов подряд.
-            Assert.IsFalse(Regex.IsMatch(result.Name, @"\s\s"));
-            Assert.IsFalse(result.Name.Length < 2);
+            CheckCommonHealth(result);
 
-            // У всех событий есть имена.
-            var elementsWithEmptyNames = result.Events.Where(x => string.IsNullOrEmpty(x.Name));
-            Assert.IsFalse(elementsWithEmptyNames.Any());
+            Assert.IsTrue(result.Events.All(x => x.DtStart.Date.DayOfWeek != DayOfWeek.Monday));
         }
 
         [TestMethod]
@@ -76,9 +78,7 @@ namespace RaspTpuIcalConverter.Tests
             const string url = "https://rasp.tpu.ru/user_296870/2019/13/view.html";
             var result = _raspTruIcalConverter.GetByLink(url);
 
-            // Вернулся валидный календарь.
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(Calendar));
+            CheckCommonHealth(result);
 
             Assert.IsTrue(result.Events.First().Name == "Консультация");
         }
@@ -105,6 +105,22 @@ namespace RaspTpuIcalConverter.Tests
             var result = _raspTruIcalConverter.GetSearchResults("это71п");
 
             Assert.IsTrue(result.Count(x => x.Id == 11047) == 1);
+        }
+
+
+        private static void CheckCommonHealth(Calendar result)
+        {
+            // Вернулся валидный календарь.
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOfType(result, typeof(Calendar));
+
+            // Имя календаря не содержит двух пробелов подряд.
+            Assert.IsFalse(Regex.IsMatch(result.Name, @"\s\s"));
+            Assert.IsFalse(result.Name.Length < 2);
+
+            // У всех событий есть имена.
+            var elementsWithEmptyNames = result.Events.Where(x => string.IsNullOrEmpty(x.Name));
+            Assert.IsFalse(elementsWithEmptyNames.Any());
         }
     }
 }

@@ -5,15 +5,26 @@ using HtmlAgilityPack;
 
 namespace RaspTpuIcalConverter.Helpers
 {
+    /// <summary>
+    /// Дешифратор запшифрованныхъ XOR-ом тегов (с названиями пар).
+    /// </summary>
     public class RaspTpuDecryptor
     {
         private byte[] key;
 
+        /// <summary>
+        /// Установить ключ.
+        /// </summary>
+        /// <param name="key"></param>
         public void SetKey(string key)
         {
             this.key = key.ToCharArray().Select(x => (byte)x).ToArray();
         }
 
+        /// <summary>
+        /// Подменить InnerText зашифрованных тегов.
+        /// </summary>
+        /// <param name="html">HTML-документ.</param>
         public void DecryptAll(ref HtmlDocument html)
         {
             ParseAndStoreKey(html);
@@ -26,6 +37,9 @@ namespace RaspTpuIcalConverter.Helpers
             }
         }
 
+        /// <summary>
+        /// Расшифровать текст.
+        /// </summary>
         public string Decrypt(string base64text)
         {
             var encodedBytes = Convert.FromBase64String(base64text);
