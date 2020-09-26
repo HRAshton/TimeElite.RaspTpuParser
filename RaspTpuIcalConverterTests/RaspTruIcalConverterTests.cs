@@ -21,12 +21,7 @@ namespace RaspTpuIcalConverter.Tests
         [TestInitialize]
         public void Init()
         {
-            var handler = new HttpClientHandler
-            {
-                Proxy = new WebProxy(new Uri("http://10.0.25.3:8080")) { UseDefaultCredentials = true },
-                DefaultProxyCredentials = CredentialCache.DefaultCredentials
-            };
-            var client = new HttpClient(handler);
+            var client = new HttpClient();
 
             _raspTruIcalConverter = new RaspTruIcalConverter(client);
             _memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -35,7 +30,7 @@ namespace RaspTpuIcalConverter.Tests
         [TestMethod]
         public void GetByQueryTest_RightGroupNameExample_NotNullGrigorianCalendarReturned()
         {
-            var result = _raspTruIcalConverter.GetByQuery("8б61");
+            var result = _raspTruIcalConverter.GetByQuery("8Т01");
             
             CheckCommonHealth(result);
         }
@@ -49,10 +44,10 @@ namespace RaspTpuIcalConverter.Tests
         }
 
         [TestMethod]
-        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8v91_2019_17.html")]
-        public void GetByHtmlTest_8d91mock_TrueCalendar()
+        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8t01_2020_4.html")]
+        public void GetByHtmlTest_8t01mock_TrueCalendar()
         {
-            const string path = @"Asserts\8v91_2019_17.html";
+            const string path = @"Asserts\8t01_2020_4.html";
             var html = File.ReadAllText(path);
             var result = _raspTruIcalConverter.GetByHtml(html);
             
@@ -60,27 +55,27 @@ namespace RaspTpuIcalConverter.Tests
         }
 
         [TestMethod]
-        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8b61_2019_26.html")]
-        public void GetByHtmlTest_8b61mock_TrueCalendar()
+        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8t01_2020_10.html")]
+        public void GetByHtmlTest_8b61mockWithHolyday_TrueCalendar()
         {
-            const string path = @"Asserts\8b61_2019_26.html";
+            const string path = @"Asserts\8t01_2020_10.html";
             var html = File.ReadAllText(path);
             var result = _raspTruIcalConverter.GetByHtml(html);
 
             CheckCommonHealth(result);
 
-            Assert.IsTrue(result.Events.All(x => x.DtStart.Date.DayOfWeek != DayOfWeek.Monday));
+            Assert.IsTrue(result.Events.All(x => x.DtStart.Date.DayOfWeek != DayOfWeek.Wednesday));
         }
 
         [TestMethod]
         public void GetByHtmlTest_Rodina_ConsultationIsNotEmpty()
         {
-            const string url = "https://rasp.tpu.ru/user_296870/2019/13/view.html";
+            const string url = "https://rasp.tpu.ru/user_296870/2020/4/view.html";
             var result = _raspTruIcalConverter.GetByLink(url);
 
             CheckCommonHealth(result);
 
-            Assert.IsTrue(result.Events.First().Name == "Консультация");
+            Assert.IsTrue(result.Events.First().Name == "Практ.психология");
         }
 
         [TestMethod]
@@ -94,7 +89,7 @@ namespace RaspTpuIcalConverter.Tests
         [TestMethod]
         public void GetByQueryTest_ReturnsSingleResult()
         {
-            var result = _raspTruIcalConverter.GetSearchResults("8б61");
+            var result = _raspTruIcalConverter.GetSearchResults("8т01");
 
             Assert.IsTrue(result.Count() == 1);
         }
@@ -102,9 +97,9 @@ namespace RaspTpuIcalConverter.Tests
         [TestMethod]
         public void GetByQueryTest_ResultExists()
         {
-            var result = _raspTruIcalConverter.GetSearchResults("это71п");
+            var result = _raspTruIcalConverter.GetSearchResults("это20ф");
 
-            Assert.IsTrue(result.Count(x => x.Id == 11047) == 1);
+            Assert.IsTrue(result.Count(x => x.Id == 18482) == 1);
         }
 
 
