@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Ical.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using RaspTpuIcalConverter.Helpers;
@@ -32,7 +31,7 @@ namespace RaspTpuIcalConverter
         }
 
         /// <summary>
-        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="Calendar" />
+        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="CalendarWithTimesModel" />
         ///     (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
@@ -48,7 +47,7 @@ namespace RaspTpuIcalConverter
         /// </summary>
         /// <param name="pageHtml">Строка с html-кодом страницы.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar GetByHtml(string pageHtml)
+        public CalendarWithTimesModel GetByHtml(string pageHtml)
         {
             var result = _pageParser.ParsePage(pageHtml);
 
@@ -56,7 +55,7 @@ namespace RaspTpuIcalConverter
         }
 
         /// <summary>
-        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="Calendar" />
+        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="CalendarWithTimesModel" />
         ///     (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
@@ -72,7 +71,7 @@ namespace RaspTpuIcalConverter
         /// </summary>
         /// <param name="link">Url получаемой страницы.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar GetByLink(string link)
+        public CalendarWithTimesModel GetByLink(string link)
         {
             var mainCalendar = GetByLink(link, 0, 0, 0);
 
@@ -80,7 +79,7 @@ namespace RaspTpuIcalConverter
         }
 
         /// <summary>
-        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="Calendar" />
+        ///     Получает страницу по url и преобразует строку с html-кодом страницы в объект типа <see cref="CalendarWithTimesModel" />
         ///     (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
@@ -99,7 +98,7 @@ namespace RaspTpuIcalConverter
         /// <param name="skipBetweenCurrentWeekAndAfter">Количество недель (включая текущую), которые должны быть пропущены.</param>
         /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar GetByLink(string link, byte before, byte skipBetweenCurrentWeekAndAfter, byte after)
+        public CalendarWithTimesModel GetByLink(string link, byte before, byte skipBetweenCurrentWeekAndAfter, byte after)
         {
             if (!_urlHelper.IsAbsoluteUrl(link)) link = "https://rasp.tpu.ru" + link;
 
@@ -110,7 +109,7 @@ namespace RaspTpuIcalConverter
         }
 
         /// <summary>
-        ///     Получает страницу по hash и возвращает расписание - объект типа <see cref="Calendar" />
+        ///     Получает страницу по hash и возвращает расписание - объект типа <see cref="CalendarWithTimesModel" />
         ///     (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
@@ -126,7 +125,7 @@ namespace RaspTpuIcalConverter
         /// </summary>
         /// <param name="hash">TODO</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar GetByHash(string hash)
+        public CalendarWithTimesModel GetByHash(string hash)
         {
             var mainCalendar = GetByHash(hash, 0, 0, 0);
 
@@ -134,7 +133,7 @@ namespace RaspTpuIcalConverter
         }
 
         /// <summary>
-        ///     Получает страницу по hash и возвращает расписание - объект типа <see cref="Calendar" />
+        ///     Получает страницу по hash и возвращает расписание - объект типа <see cref="CalendarWithTimesModel" />
         ///     (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
@@ -153,7 +152,7 @@ namespace RaspTpuIcalConverter
         /// <param name="skipBetweenCurrentWeekAndAfter">Количество недель (включая текущую), которые должны быть пропущены.</param>
         /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar GetByHash(string hash, byte before, byte skipBetweenCurrentWeekAndAfter, byte after)
+        public CalendarWithTimesModel GetByHash(string hash, byte before, byte skipBetweenCurrentWeekAndAfter, byte after)
         {
             var hashedLink = "https://rasp.tpu.ru/redirect/kalendar.html?hash=" + hash;
             var trueUrl = _urlHelper.GetFinalRedirect(hashedLink);
@@ -165,7 +164,7 @@ namespace RaspTpuIcalConverter
 
         /// <summary>
         ///     Получает страницу по точному совпадению в поиске (<paramref name="query" />) и преобразует строку с html-кодом
-        ///     страницы в объект типа <see cref="Calendar" /> (Ical.Net).
+        ///     страницы в объект типа <see cref="CalendarWithTimesModel" /> (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
         ///         <item> Name </item>
@@ -183,7 +182,7 @@ namespace RaspTpuIcalConverter
         ///     учитывается.
         /// </param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar GetByQuery(string query)
+        public CalendarWithTimesModel GetByQuery(string query)
         {
             var calendar = GetByQuery(query, 0, 0, 0);
 
@@ -192,7 +191,7 @@ namespace RaspTpuIcalConverter
 
         /// <summary>
         ///     Получает страницу по точному совпадению в поиске (<paramref name="query" />) и преобразует строку с html-кодом
-        ///     страницы в объект типа <see cref="Calendar" /> (Ical.Net).
+        ///     страницы в объект типа <see cref="CalendarWithTimesModel" /> (Ical.Net).
         ///     У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
         ///     <list type="bullet">
         ///         <item> Name </item>
@@ -213,7 +212,7 @@ namespace RaspTpuIcalConverter
         /// <param name="skipBetweenCurrentWeekAndAfter">Количество недель (включая текущую), которые должны быть пропущены.</param>
         /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar GetByQuery(string query, byte before, byte skipBetweenCurrentWeekAndAfter, byte after)
+        public CalendarWithTimesModel GetByQuery(string query, byte before, byte skipBetweenCurrentWeekAndAfter, byte after)
         {
             var searchResults = GetSearchResults(query);
 
@@ -278,7 +277,7 @@ namespace RaspTpuIcalConverter
             return urls;
         }
 
-        private Calendar GetJoinedCalendarByUrls(IEnumerable<string> urls)
+        private CalendarWithTimesModel GetJoinedCalendarByUrls(IEnumerable<string> urls)
         {
             var calendars = urls
                 .Select(x => _urlHelper.GetRequestContent(x, _cacheTime))

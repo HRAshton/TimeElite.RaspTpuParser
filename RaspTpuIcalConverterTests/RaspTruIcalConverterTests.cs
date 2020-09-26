@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Ical.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RaspTpuIcalConverter.RaspTpuModels;
 
 // ReSharper disable once CheckNamespace
 namespace RaspTpuIcalConverter.Tests
@@ -103,7 +104,7 @@ namespace RaspTpuIcalConverter.Tests
         }
 
 
-        private static void CheckCommonHealth(Calendar result)
+        private static void CheckCommonHealth(CalendarWithTimesModel result)
         {
             // Вернулся валидный календарь.
             Assert.IsNotNull(result);
@@ -116,6 +117,19 @@ namespace RaspTpuIcalConverter.Tests
             // У всех событий есть имена.
             var elementsWithEmptyNames = result.Events.Where(x => string.IsNullOrEmpty(x.Name));
             Assert.IsFalse(elementsWithEmptyNames.Any());
+            
+            // Времена начал пар идут в порядке возрастания.
+            for (var index = 1; index < result.LessonsTimes.Count; index++)
+            {
+                var prev = result.LessonsTimes[index - 1];
+                var curr = result.LessonsTimes[index];
+                if (prev.Minutes + prev.Hours * 60 >= curr.Minutes + curr.Hours * 60)
+                {
+                    Assert.Fail();
+                }
+
+                Assert.AreEqual(curr.Hours - prev.Hours, 2);
+            }
         }
     }
 }

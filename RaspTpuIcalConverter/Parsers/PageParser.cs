@@ -9,262 +9,279 @@ using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using RaspTpuIcalConverter.Extensions;
 using RaspTpuIcalConverter.Helpers;
+using RaspTpuIcalConverter.RaspTpuModels;
 using Calendar = Ical.Net.Calendar;
 
 namespace RaspTpuIcalConverter.Parsers
 {
-    /// <summary>
-    /// Парсер для html-страницы сайта rasp.tpu.ru.
-    /// </summary>
-    internal class PageParser
-    {
-        /// <summary>
-        /// Преобразует строку с html-кодом страницы в объект типа <see cref="Calendar"/> (Ical.Net).
-        /// </summary>
-        /// У календаря есть поле Events, содержащее события. У события заполняются только атрибуты:
-        /// <list type="bullet">
-        /// <item> Name </item>
-        /// <item> Categories </item>
-        /// <item> Contacts </item>
-        /// <item> Location </item>
-        /// <item> Description </item>
-        /// <item> DtStart </item>
-        /// <item> DtEnd </item>
-        /// <item> Duration </item>
-        /// </list>
-        /// <param name="html">Строка с html-кодом страницы.</param>
-        /// <returns>Календарь с названием и событиями.</returns>
-        public Calendar ParsePage(string html)
-        {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+	/// <summary>
+	/// Парсер для html-страницы сайта rasp.tpu.ru.
+	/// </summary>
+	internal class PageParser
+	{
+		/// <summary>
+		/// Преобразует строку с html-кодом страницы в объект типа <see cref="Calendar"/> (Ical.Net).
+		/// </summary>
+		/// У календаря есть поле Events, содержащее события. У события заполняются только атрибуты:
+		/// <list type="bullet">
+		/// <item> Name </item>
+		/// <item> Categories </item>
+		/// <item> Contacts </item>
+		/// <item> Location </item>
+		/// <item> Description </item>
+		/// <item> DtStart </item>
+		/// <item> DtEnd </item>
+		/// <item> Duration </item>
+		/// </list>
+		/// <param name="html">Строка с html-кодом страницы.</param>
+		/// <returns>Календарь с названием и событиями.</returns>
+		public CalendarWithTimesModel ParsePage(string html)
+		{
+			var doc = new HtmlDocument();
+			doc.LoadHtml(html);
 
-            var decryptor = new RaspTpuDecryptor();
-            decryptor.DecryptAll(ref doc);
+			var decryptor = new RaspTpuDecryptor();
+			decryptor.DecryptAll(ref doc);
 
-            var tableNode = doc.GetElementbyId("raspisanie-table")
-                .ChildNodes.FirstOrDefault(node => node.NodeType == HtmlNodeType.Element);
-            var monday = GetMonday(tableNode);
+			var tableNode = doc.GetElementbyId("raspisanie-table")
+				.ChildNodes.FirstOrDefault(node => node.NodeType == HtmlNodeType.Element);
+			var monday = GetMonday(tableNode);
 
-            var name = ParseCalendarName(doc);
+			var name = ParseCalendarName(doc);
 
-            var tbody = tableNode // table
-                ?.ChildNodes
-                .LastOrDefault(node => node.NodeType == HtmlNodeType.Element); // tbody
-            var calendar = GetCalendar(monday, tbody, name);
+			var tbody = tableNode // table
+				?.ChildNodes
+				.LastOrDefault(node => node.NodeType == HtmlNodeType.Element); // tbody
+			var calendar = GetCalendar(monday, tbody, name);
 
-            return calendar;
-        }
+			return calendar;
+		}
 
-        private static string ParseCalendarName(HtmlDocument doc)
-        {
-            var title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText
-                .Split("/")
-                .FirstOrDefault() 
-                ?? "[ ?? ]";
+		private static string ParseCalendarName(HtmlDocument doc)
+		{
+			var title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText
+				            .Split("/")
+				            .FirstOrDefault()
+			            ?? "[ ?? ]";
 
-            var name = title.Replace("«", string.Empty).Replace("»", string.Empty);
-            name = name.Replace("Расписание группы", string.Empty);
-            name = name.Replace("Расписание для аудитории", string.Empty);
-            name = name.Replace("Расписание для преподавателя", string.Empty);
+			var name = title.Replace("«", string.Empty).Replace("»", string.Empty);
+			name = name.Replace("Расписание группы", string.Empty);
+			name = name.Replace("Расписание для аудитории", string.Empty);
+			name = name.Replace("Расписание для преподавателя", string.Empty);
 
-            name = Regex.Replace(name, @"\s+", " ").Trim();
+			name = Regex.Replace(name, @"\s+", " ").Trim();
 
-            return name;
-        }
+			return name;
+		}
 
-        private static DateTime GetMonday(HtmlNode tableNode)
-        {
-            var thead = tableNode
-                ?.ChildNodes
-                .FirstOrDefault(node => node.NodeType == HtmlNodeType.Element);
+		private static DateTime GetMonday(HtmlNode tableNode)
+		{
+			var thead = tableNode
+				?.ChildNodes
+				.FirstOrDefault(node => node.NodeType == HtmlNodeType.Element);
 
-            var stringDate = thead.GetChildElementsList()
-                .First()
-                .GetChildElementsList()[1]
-                .ChildNodes[0]
-                .InnerText
-                .Trim();
+			var stringDate = thead.GetChildElementsList()
+				.First()
+				.GetChildElementsList()[1]
+				.ChildNodes[0]
+				.InnerText
+				.Trim();
 
-            var date = DateTime.Parse(stringDate, new CultureInfo("ru-RU"));
+			var date = DateTime.Parse(stringDate, new CultureInfo("ru-RU"));
 
-            return date;
-        }
+			return date;
+		}
 
-        private Calendar GetCalendar(DateTime mondayDate, HtmlNode tbody, string calendarName)
-        {
-            var rows = tbody.GetChildElementsList();
+		private CalendarWithTimesModel GetCalendar(DateTime mondayDate, HtmlNode tbody, string calendarName)
+		{
+			var rows = tbody.GetChildElementsList();
 
-            var holydays = GetHolydays(rows);
+			var holydays = GetHolydays(rows);
 
-            var events = ParseRow(rows.First(), holydays, mondayDate, 0);
-            var tasks = new List<Task<List<CalendarEvent>>>();
-            for (var rowIndex = 1; rowIndex < rows.Count; rowIndex++)
-            {
-                var row = rows[rowIndex];
-                var task = Task.Run(() => ParseRow(row, holydays, mondayDate, rowIndex + 1));
-                tasks.Add(task);
-            }
-            Task.WhenAll(tasks)
-                .Result
-                .ToList()
-                .ForEach(events.AddRange);
+			var tasks = new List<Task<RowParseResultModel>>();
+			var results = new List<RowParseResultModel> {ParseRow(rows.First(), holydays, mondayDate, 0)};
+			for (var rowIndex = 1; rowIndex < rows.Count; rowIndex++)
+			{
+				var index = rowIndex;
+				var row = rows[index];
+				var task = Task.Run(() => ParseRow(row, holydays, mondayDate, index + 1));
+				tasks.Add(task);
+			}
 
-            var calendar = new Calendar
-            {
-                Name = calendarName
-            };
-            calendar.Events.AddRange(events);
+			Task.WhenAll(tasks).Result
+				.ToList()
+				.ForEach(results.Add);
 
-            return calendar;
-        }
+			var calendar = new CalendarWithTimesModel
+			{
+				Name = calendarName,
+				LessonsTimes = results
+					.Select(r => r.LessonStart)
+					.OrderBy(tuple => tuple.Hours).ThenBy(tuple => tuple.Minutes)
+					.ToList(),
+			};
+			calendar.Events.AddRange(
+				results.SelectMany(r => r.Events));
 
-        private List<CalendarEvent> ParseRow(HtmlNode row, ICollection<DayOfWeek> holydays, DateTime mondayDate, int rowIndex)
-        {
-            var cells = row.GetChildElementsList();
+			return calendar;
+		}
 
-            var events = new List<CalendarEvent>();
+		private RowParseResultModel ParseRow(HtmlNode row, ICollection<DayOfWeek> holydays,
+			DateTime mondayDate, int rowIndex)
+		{
+			var lessonStartTime = GetStartTime(row);
+			var mondayLessonStartDayTime = mondayDate.Add(lessonStartTime);
+			var cells = row.GetChildElementsList();
 
-            var currentCellIndex = 0;
-            for (var dayOfWeek = 0; dayOfWeek < 6; dayOfWeek++)
-            {
-                var currentDayOfWeek = (DayOfWeek) (dayOfWeek + 1);
-                if (holydays.Contains(currentDayOfWeek))
-                {
-                    if (rowIndex == 0) currentCellIndex++;
-                    continue;
-                }
+			var events = new List<CalendarEvent>();
 
-                currentCellIndex++;
-                var dateTime = GetStartDateTime(row, mondayDate, dayOfWeek);
-                var cellEvents = ParseCell(cells[currentCellIndex], dateTime);
+			var currentCellIndex = 0;
+			for (var dayOfWeek = 0; dayOfWeek < 6; dayOfWeek++)
+			{
+				var currentDayOfWeek = (DayOfWeek) (dayOfWeek + 1);
+				if (holydays.Contains(currentDayOfWeek))
+				{
+					if (rowIndex == 0) currentCellIndex++;
+					continue;
+				}
 
-                events.AddRange(cellEvents);
-            }
+				currentCellIndex++;
+				var lessonStartDateTime = mondayLessonStartDayTime.AddDays(dayOfWeek);
+				var cellEvents = ParseCell(cells[currentCellIndex], lessonStartDateTime);
 
-            return events;
-        }
+				events.AddRange(cellEvents);
+			}
 
-        private DateTime GetStartDateTime(HtmlNode row, DateTime mondayDate, int dayOfWeek)
-        {
-            var firstLessonStart = mondayDate.AddDays(dayOfWeek);
+			return new RowParseResultModel
+			{
+				Events = events,
+				LessonStart = ((byte) lessonStartTime.Hours, (byte) lessonStartTime.Minutes),
+			};
+		}
 
-            var lessonStartString = Regex.Match(row.GetChildElementsList().First().InnerText, @"\d{1,2}:\d{2}");
-            var Minutes = TimeSpan.Parse(lessonStartString.Value);
+		private TimeSpan GetStartTime(HtmlNode row)
+		{
+			var lessonStartString = Regex.Match(row.GetChildElementsList().First().InnerText, @"\d{1,2}:\d{2}");
+			var time = TimeSpan.Parse(lessonStartString.Value);
 
-            var lessonStart = firstLessonStart.Add(Minutes);
+			return time;
+		}
 
-            return lessonStart;
-        }
+		private static IEnumerable<CalendarEvent> ParseCell(HtmlNode td, DateTime dateTime)
+		{
+			var locationRegex = new Regex(@"к. ([^\s]+), ауд. ([^\s]+)");
 
-        private static IEnumerable<CalendarEvent> ParseCell(HtmlNode td, DateTime dateTime)
-        {
-            var locationRegex = new Regex(@"к. ([^\s]+), ауд. ([^\s]+)");
+			var isEmptyCell = !td.ChildNodes.Any();
+			if (isEmptyCell) return new List<CalendarEvent>();
 
-            var isEmptyCell = !td.ChildNodes.Any();
-            if (isEmptyCell) return new List<CalendarEvent>();
+			var hrGroups = td.ChildNodes
+				.Where(x => x.Name != "#text")
+				.ToList()
+				.SplitBy(x => x.Name == "hr");
 
-            var hrGroups = td.ChildNodes
-                .Where(x => x.Name != "#text")
-                .ToList()
-                .SplitBy(x => x.Name == "hr");
+			var events = new List<CalendarEvent>();
+			for (var i = 0; i < hrGroups.Count; i++)
+			{
+				var group = hrGroups[i];
 
-            var events = new List<CalendarEvent>();
-            for (var i = 0; i < hrGroups.Count; i++)
-            {
-                var group = hrGroups[i];
+				HtmlNode spanWithName = null;
+				for (var j = i; j >= 0; j--)
+				{
+					spanWithName = hrGroups[j].SelectMany(x => x.ChildNodes).FirstOrDefault(x => x.Name == "span");
+					if (spanWithName != null) break;
+				}
 
-                HtmlNode spanWithName = null;
-                for (var j = i; j >= 0; j--)
-                {
-                    spanWithName = hrGroups[j].SelectMany(x => x.ChildNodes).FirstOrDefault(x => x.Name == "span");
-                    if (spanWithName != null) break;
-                }
+				HtmlNode bWithType = null;
+				for (var j = i; j >= 0; j--)
+				{
+					bWithType = hrGroups[j].SelectMany(x => x.ChildNodes).FirstOrDefault(x => x.Name == "b");
+					if (bWithType != null) break;
+				}
 
-                HtmlNode bWithType = null;
-                for (var j = i; j >= 0; j--)
-                {
-                    bWithType = hrGroups[j].SelectMany(x => x.ChildNodes).FirstOrDefault(x => x.Name == "b");
-                    if (bWithType != null) break;
-                }
-                var name = spanWithName?.GetAttributeValue("title", string.Empty).Trim() ?? string.Empty;
+				var name = spanWithName?.GetAttributeValue("title", string.Empty).Trim() ?? string.Empty;
 
-                var shortName = spanWithName?.InnerText.Trim() ?? string.Empty;
+				var shortName = spanWithName?.InnerText.Trim() ?? string.Empty;
 
-                if (shortName == string.Empty)
-                {
-                    for (var j = i; j >= 0; j--)
-                    {
-                        shortName = new string(hrGroups[j]
-                            .Select(x => x.InnerText)
-                            .FirstOrDefault(x => x.Contains('('))
-                            ?.TakeWhile(ch => ch != '(')
-                            .SkipLast(1) // space
-                            .ToArray());
+				if (shortName == string.Empty)
+				{
+					for (var j = i; j >= 0; j--)
+					{
+						shortName = new string(hrGroups[j]
+							.Select(x => x.InnerText)
+							.FirstOrDefault(x => x.Contains('('))
+							?.TakeWhile(ch => ch != '(')
+							.SkipLast(1) // space
+							.ToArray() ?? new char[0]);
 
-                        if (shortName != string.Empty) break;
-                    }
-                }
-                
-                var type = bWithType?.InnerText.Trim() ?? string.Empty;
-                var linkNodes = group.SelectMany(x => x.ChildNodes).Where(x => x.Name == "a").ToArray();
-                var teacher = linkNodes.Any() ? linkNodes[0].InnerText.Trim() : string.Empty;
+						if (shortName != string.Empty) break;
+					}
+				}
 
-                var locationFragments = group.Select(x => locationRegex.Match(x.InnerText))
-                    .FirstOrDefault(x => x.Success)
-                    ?.Groups
-                    .Values
-                    .Skip(1)
-                    .Select(x => x.Value)
-                    .ToArray();
-                var location = locationFragments != null
-                    ? string.Join('-', locationFragments) 
-                    : string.Empty;
+				var type = bWithType?.InnerText.Trim() ?? string.Empty;
+				var linkNodes = group.SelectMany(x => x.ChildNodes).Where(x => x.Name == "a").ToArray();
+				var teacher = linkNodes.Any() ? linkNodes[0].InnerText.Trim() : string.Empty;
 
-                var calendarEvent = CreateEvent(dateTime, shortName, new[] {teacher, name}, location, name, type); // TODO
+				var locationFragments = group.Select(x => locationRegex.Match(x.InnerText))
+					.FirstOrDefault(x => x.Success)
+					?.Groups
+					.Values
+					.Skip(1)
+					.Select(x => x.Value)
+					.ToArray();
+				var location = locationFragments != null
+					? string.Join('-', locationFragments)
+					: string.Empty;
 
-                events.Add(calendarEvent);
-            }
+				var calendarEvent = new CalendarEvent
+				{
+					Name = shortName,
+					Categories = new List<string> {type},
+					Contacts = new List<string> {teacher, name},
+					Location = location,
+					Description = $"Полное название: {name}\r\nТип: {type}",
+					DtStart = new CalDateTime(dateTime),
+					Duration = new TimeSpan(1, 35, 0),
+				};
 
-            return events;
-        }
+				events.Add(calendarEvent);
+			}
+
+			return events;
+		}
+
+		private static List<DayOfWeek> GetHolydays(IEnumerable<HtmlNode> rows)
+		{
+			var firstRowTds = rows
+				.First(x => x.NodeType == HtmlNodeType.Element)
+				.ChildNodes
+				.Where(x => x.NodeType == HtmlNodeType.Element);
+
+			var timeCellSkipped = firstRowTds.Skip(1);
+			var result = timeCellSkipped
+				.Select((cell, index) => new
+				{
+					IsHolyday = cell.Attributes["rowspan"]?.Value == "7",
+					Index = index
+				})
+				.Where(x => x.IsHolyday)
+				.Select(x => (DayOfWeek) (x.Index + 1))
+				.ToList();
+
+			return result;
+		}
 
 
-        // ReSharper disable once ParameterTypeCanBeEnumerable.Local
-        private static CalendarEvent CreateEvent(DateTime dateTime, string shortName, string[] teacher, string location,
-            string name, string type)
-        {
-            return new CalendarEvent
-            {
-                Name = shortName,
-                Categories = new List<string> { type },
-                Contacts = new List<string>(teacher),
-                Location = location,
-                Description = $"Полное название: {name}\r\nТип: {type}",
-                DtStart = new CalDateTime(dateTime),
-                Duration = new TimeSpan(1, 35, 0)
-            };
-        }
+		private class RowParseResultModel
+		{
+			/// <summary>
+			///     Время начала пары.
+			/// </summary>
+			public (byte Hours, byte Minutes) LessonStart = (0, 0);
 
-        private static List<DayOfWeek> GetHolydays(IEnumerable<HtmlNode> rows)
-        {
-            var firstRowTds = rows
-                .First(x => x.NodeType == HtmlNodeType.Element)
-                .ChildNodes
-                .Where(x => x.NodeType == HtmlNodeType.Element);
-
-            var timeCellSkipped = firstRowTds.Skip(1);
-            var result = timeCellSkipped
-                .Select((cell, index) => new
-                {
-                    IsHolyday = cell.Attributes["rowspan"]?.Value == "7",
-                    Index = index
-                })
-                .Where(x => x.IsHolyday)
-                .Select(x => (DayOfWeek) (x.Index + 1))
-                .ToList();
-
-            return result;
-        }
-    }
+			/// <summary>
+			///     Список пар в строке таблицы.
+			/// </summary>
+			public List<CalendarEvent> Events = new List<CalendarEvent>();
+		}
+	}
 }
