@@ -1,0 +1,9 @@
+version: 1.0.{build}
+configuration: Release
+platform: Any CPU
+nuget:
+  disable_publish_on_pr: true
+before_build:
+- ps: nuget restore
+build:
+  verbosity: minimal
