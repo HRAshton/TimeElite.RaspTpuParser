@@ -21,10 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Asserts\8b61_2019_26.html">
+    <None Update="Asserts\8t01_2020_10.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Asserts\8v91_2019_17.html">
+    <None Update="Asserts\8t01_2020_4.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
