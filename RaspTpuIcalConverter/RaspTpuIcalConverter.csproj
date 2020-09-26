@@ -16,8 +16,10 @@
     <Copyright>HRAshton</Copyright>
     <Description>Парсер расписания Томского политехнического университета (http://rasp.tpu.ru)</Description>
     <NeutralLanguage>ru</NeutralLanguage>
-    <PackageReleaseNotes>- универсализирован метод получения выходных и праздничных дней;</PackageReleaseNotes>
-    <FileVersion>1.2.1.0</FileVersion>
+    <PackageReleaseNotes>- актуализированы юнит-тесты;
+- устранен сбой из-за изменения времени начала пар;</PackageReleaseNotes>
+    <FileVersion>1.2.2.0</FileVersion>
+    <PackageVersion>1.2.2</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
