@@ -18,11 +18,6 @@ namespace RaspTpuIcalConverter.Parsers
     /// </summary>
     internal class PageParser
     {
-        private readonly List<string> StringTimeAssociation = new List<string>(new[]
-        {
-            "8:30", "10:25", "12:20", "14:15", "16:10", "18:05", "20:00"
-        });
-
         /// <summary>
         /// Преобразует строку с html-кодом страницы в объект типа <see cref="Calendar"/> (Ical.Net).
         /// </summary>
@@ -152,14 +147,12 @@ namespace RaspTpuIcalConverter.Parsers
 
         private DateTime GetStartDateTime(HtmlNode row, DateTime mondayDate, int dayOfWeek)
         {
-            var firstLessonStart = mondayDate
-                .AddDays(dayOfWeek)
-                .AddMinutes(510); // 8:30
+            var firstLessonStart = mondayDate.AddDays(dayOfWeek);
 
-            var lessonIndex = StringTimeAssociation
-                .FindIndex(x => row.GetChildElementsList().First().InnerText.Contains(x));
+            var lessonStartString = Regex.Match(row.GetChildElementsList().First().InnerText, @"\d{1,2}:\d{2}");
+            var Minutes = TimeSpan.Parse(lessonStartString.Value);
 
-            var lessonStart = firstLessonStart.AddMinutes(lessonIndex * (20 + 95));
+            var lessonStart = firstLessonStart.Add(Minutes);
 
             return lessonStart;
         }
