@@ -1,10 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
+﻿using System.IO;
 using HtmlAgilityPack;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RaspTpuIcalConverter.Helpers;
 
-namespace RaspTpuIcalConverter.Helpers.Tests
+namespace RaspTpuIcalConverter.Tests.Helpers
 {
-    [TestClass()]
+    [TestClass]
     public class RaspTpuDecryptorTests
     {
         private RaspTpuDecryptor decryptor;

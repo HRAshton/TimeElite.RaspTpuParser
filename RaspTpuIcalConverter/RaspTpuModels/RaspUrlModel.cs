@@ -1,30 +1,30 @@
 ﻿namespace RaspTpuIcalConverter.RaspTpuModels
 {
     /// <summary>
-    ///     Модель Url расписания.
+    /// Модель Url расписания.
     /// </summary>
     internal class RaspUrlModel
     {
         /// <summary>
-        ///     Идентификатор.
-        ///     <example>pomeschenie_1960</example>
+        /// Идентификатор.
+        /// <example>pomeschenie_1960</example>
         /// </summary>
-        public string Id;
+        public string Id { get; set; }
 
         /// <summary>
-        ///     Учебный год. При запросе в феврале будет всё так же отдавтаться предыдущий год.
-        ///     <example>2019</example>
+        /// Учебный год. При запросе в феврале будет всё так же возвращаться предыдущий год.
+        /// <example>2019</example>
         /// </summary>
-        public ushort Year;
+        public ushort Year { get; set; }
 
         /// <summary>
-        ///     Номер недели учебного года.
-        ///     <example>pomeschenie_1960</example>
+        /// Номер недели учебного года.
+        /// <example>pomeschenie_1960</example>
         /// </summary>
-        public byte Week;
+        public byte Week { get; set; }
 
         /// <summary>
-        ///     Получить измененную Url по смущунию номера недели.
+        /// Получить измененную Url по смещению номера недели.
         /// </summary>
         /// <param name="delta">Смещение номера недели.</param>
         /// <returns>Измененный Url.</returns>

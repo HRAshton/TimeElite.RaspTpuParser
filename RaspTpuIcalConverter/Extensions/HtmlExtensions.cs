@@ -16,8 +16,8 @@ namespace RaspTpuIcalConverter.Extensions
         /// <returns>Дочерние элементы (не #text) HtmlNode</returns>
         public static List<HtmlNode> GetChildElementsList(this HtmlNode node)
         {
-            var result = node
-                .ChildNodes.Where(x => x.NodeType == HtmlNodeType.Element)
+            var result = node.ChildNodes
+                .Where(x => x.NodeType == HtmlNodeType.Element)
                 .ToList();
 
             return result;

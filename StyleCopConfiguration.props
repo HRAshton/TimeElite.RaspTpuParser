@@ -1,0 +1,12 @@
+<Project>
+    <PropertyGroup>
+        <NoWarn>$(NoWarn);SA1200;SA1101;SA1633;SA1642;SA1623;SA1204;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+</Project>
