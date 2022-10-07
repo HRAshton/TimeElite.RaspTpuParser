@@ -4,15 +4,15 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HRAshton.TimeElite.RaspTpuParser.Extensions;
+using HRAshton.TimeElite.RaspTpuParser.Helpers;
+using HRAshton.TimeElite.RaspTpuParser.RaspTpuModels;
 using HtmlAgilityPack;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
-using RaspTpuIcalConverter.Extensions;
-using RaspTpuIcalConverter.Helpers;
-using RaspTpuIcalConverter.RaspTpuModels;
 using Calendar = Ical.Net.Calendar;
 
-namespace RaspTpuIcalConverter.Parsers
+namespace HRAshton.TimeElite.RaspTpuParser.Parsers
 {
     /// <summary>
     /// Парсер для html-страницы сайта rasp.tpu.ru.

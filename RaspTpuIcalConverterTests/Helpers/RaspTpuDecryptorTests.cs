@@ -1,9 +1,9 @@
 ﻿using System.IO;
+using HRAshton.TimeElite.RaspTpuParser.Helpers;
 using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RaspTpuIcalConverter.Helpers;
 
-namespace RaspTpuIcalConverter.Tests.Helpers
+namespace HRAshton.TimeElite.RaspTpuParser.Tests.Helpers
 {
     [TestClass]
     public class RaspTpuDecryptorTests

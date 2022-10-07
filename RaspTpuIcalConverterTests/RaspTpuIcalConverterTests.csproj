@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <AssemblyName>RaspTpuIcalConverter.Tests</AssemblyName>
-    <RootNamespace>RaspTpuIcalConverter.Tests</RootNamespace>
+    <AssemblyName>HRAshton.TimeElite.RaspTpuParser.Tests</AssemblyName>
+    <RootNamespace>HRAshton.TimeElite.RaspTpuParser.Tests</RootNamespace>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>

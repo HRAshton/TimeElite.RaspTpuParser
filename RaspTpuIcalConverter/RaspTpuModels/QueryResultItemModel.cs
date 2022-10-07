@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RaspTpuIcalConverter.RaspTpuModels
+namespace HRAshton.TimeElite.RaspTpuParser.RaspTpuModels
 {
     /// <summary>
     /// Модель элемента результата поиска.

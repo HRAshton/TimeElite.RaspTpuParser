@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ical.Net;
 
-namespace RaspTpuIcalConverter.RaspTpuModels
+namespace HRAshton.TimeElite.RaspTpuParser.RaspTpuModels
 {
     /// <summary>
     /// Модель результата парсера расписания.

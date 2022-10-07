@@ -2,7 +2,7 @@
 using System.Linq;
 using HtmlAgilityPack;
 
-namespace RaspTpuIcalConverter.Extensions
+namespace HRAshton.TimeElite.RaspTpuParser.Extensions
 {
     /// <summary>
     /// Расширение <see cref="HtmlNode" />.

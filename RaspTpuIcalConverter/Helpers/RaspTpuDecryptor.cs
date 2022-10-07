@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using HtmlAgilityPack;
 
-namespace RaspTpuIcalConverter.Helpers
+namespace HRAshton.TimeElite.RaspTpuParser.Helpers
 {
     /// <summary>
     /// Дешифратор зашифрованных XOR-ом тегов (с названиями пар).

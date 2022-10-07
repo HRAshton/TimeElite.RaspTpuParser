@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RaspTpuIcalConverter.Extensions
+namespace HRAshton.TimeElite.RaspTpuParser.Extensions
 {
     /// <summary>
     /// Расширение <see cref="List{T}" />.

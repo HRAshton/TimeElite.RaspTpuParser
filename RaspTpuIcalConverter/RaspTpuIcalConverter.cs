@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using HRAshton.TimeElite.RaspTpuParser.Helpers;
+using HRAshton.TimeElite.RaspTpuParser.Parsers;
+using HRAshton.TimeElite.RaspTpuParser.RaspTpuModels;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
-using RaspTpuIcalConverter.Helpers;
-using RaspTpuIcalConverter.Parsers;
-using RaspTpuIcalConverter.RaspTpuModels;
 
-namespace RaspTpuIcalConverter
+namespace HRAshton.TimeElite.RaspTpuParser
 {
     /// <summary>
     /// Модуль парсинга расписания.
     /// </summary>
-    public class RaspTruIcalConverter
+    public class RaspTpuIcalConverter
     {
         /// <summary>
         /// Конструктор.
@@ -21,7 +21,7 @@ namespace RaspTpuIcalConverter
         /// <param name="httpClient">Клиент для запросов (с прокси-сервером, если надо).</param>
         /// <param name="memoryCache">Кэш.</param>
         /// <param name="cacheTime">Время жизни кэша.</param>
-        public RaspTruIcalConverter(
+        public RaspTpuIcalConverter(
             HttpClient httpClient = null,
             IMemoryCache memoryCache = null,
             TimeSpan cacheTime = default)

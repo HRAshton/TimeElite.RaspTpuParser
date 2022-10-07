@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace RaspTpuIcalConverter.Helpers
+namespace HRAshton.TimeElite.RaspTpuParser.Helpers
 {
     /// <summary>
     /// Набор функций для работы с Url и сетью.

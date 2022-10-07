@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RaspTpuIcalConverter.RaspTpuModels
+namespace HRAshton.TimeElite.RaspTpuParser.RaspTpuModels
 {
     /// <summary>
     /// Модель результата поиска.

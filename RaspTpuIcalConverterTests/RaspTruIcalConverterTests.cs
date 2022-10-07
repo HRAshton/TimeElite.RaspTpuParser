@@ -3,12 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using HRAshton.TimeElite.RaspTpuParser.RaspTpuModels;
 using Ical.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RaspTpuIcalConverter.RaspTpuModels;
 
-// ReSharper disable once CheckNamespace
-namespace RaspTpuIcalConverter.Tests
+namespace HRAshton.TimeElite.RaspTpuParser.Tests
 {
     /// <summary>
     /// Тесты модуля парсинга расписания.
@@ -16,7 +15,7 @@ namespace RaspTpuIcalConverter.Tests
     [TestClass]
     public class RaspTruIcalConverterTests
     {
-        private RaspTruIcalConverter raspTpuIcalConverter;
+        private RaspTpuIcalConverter raspTpuIcalConverter;
 
         /// <summary>
         /// Инициализация тестов.
@@ -26,7 +25,7 @@ namespace RaspTpuIcalConverter.Tests
         {
             var client = new HttpClient();
 
-            raspTpuIcalConverter = new RaspTruIcalConverter(client);
+            raspTpuIcalConverter = new RaspTpuIcalConverter(client);
         }
 
         /// <summary>
