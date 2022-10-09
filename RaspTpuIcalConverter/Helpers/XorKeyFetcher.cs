@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace HRAshton.TimeElite.RaspTpuParser.Helpers
@@ -27,9 +28,9 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
         /// <param name="requestKey">Ключ запроса.</param>
         /// <param name="csrfToken">CSRF-токен.</param>
         /// <returns>Xor-ключ.</returns>
-        public string FetchXorKey(string requestKey, string csrfToken)
+        public async Task<string> FetchXorKeyAsync(string requestKey, string csrfToken)
         {
-            var content = new FormUrlEncodedContent(
+            using var content = new FormUrlEncodedContent(
                 new Dictionary<string, string>
                 {
                     { "token", "token" },
@@ -37,13 +38,11 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
                 });
             content.Headers.Add("x-csrf-token", csrfToken);
 
-            var task = HttpClient.PostAsync(RaspTpuUrlHelper.XorPage, content);
-            task.Wait();
+            var task = await HttpClient.PostAsync(RaspTpuUrlHelper.XorPage, content);
 
-            var jsonResponse = task.Result.Content.ReadAsStringAsync();
-            jsonResponse.Wait();
+            var jsonResponse = await task.Content.ReadAsStringAsync();
 
-            var receivedKey = JsonConvert.DeserializeObject<XorKeyFetchingResult>(jsonResponse.Result);
+            var receivedKey = JsonConvert.DeserializeObject<XorKeyFetchingResult>(jsonResponse);
             if (receivedKey.Message != "OK")
             {
                 throw new JsonException("Не удалось получить xor-ключ.");

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace HRAshton.TimeElite.RaspTpuParser.Extensions
 {
@@ -9,28 +10,12 @@ namespace HRAshton.TimeElite.RaspTpuParser.Extensions
     public static class HttpClientExtensions
     {
         /// <summary>
-        /// Получает содержимое по Url и возвращает его в виде строки.
-        /// </summary>
-        /// <param name="httpClient">Клиент http.</param>
-        /// <param name="url">Адрес для получения содержимого.</param>
-        /// <returns>Содержимое.</returns>
-        public static string GetRequestContent(this HttpClient httpClient, string url)
-        {
-            var response = httpClient.GetStringAsync(url);
-
-            response.Wait();
-            var result = response.Result;
-
-            return result;
-        }
-
-        /// <summary>
         /// Получает ссылку после переадресации.
         /// </summary>
         /// <param name="httpClient">Клиент http.</param>
         /// <param name="url">Входной url.</param>
         /// <returns>Ссылка после переадресации.</returns>
-        public static string GetFinalRedirect(this HttpClient httpClient, string url)
+        public static async Task<string> GetFinalRedirectAsync(this HttpClient httpClient, string url)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -39,10 +24,9 @@ namespace HRAshton.TimeElite.RaspTpuParser.Extensions
 
             try
             {
-                var task = httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                task.Wait();
+                var task = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
 
-                return task.Result.RequestMessage.RequestUri.AbsoluteUri;
+                return task.RequestMessage.RequestUri.AbsoluteUri;
             }
             catch (WebException)
             {

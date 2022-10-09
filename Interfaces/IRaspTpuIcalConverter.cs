@@ -1,4 +1,5 @@
-﻿using HRAshton.TimeElite.RaspTpuParser.Models;
+﻿using System.Threading.Tasks;
+using HRAshton.TimeElite.RaspTpuParser.Models;
 
 namespace HRAshton.TimeElite.RaspTpuParser
 {
@@ -23,29 +24,9 @@ namespace HRAshton.TimeElite.RaspTpuParser
         ///     <item> Duration </item>
         /// </list>
         /// </summary>
-        /// <param name="pageHtml">Строка с html-кодом страницы.</param>
-        /// <returns>Календарь с названием и событиями.</returns>
-        CalendarWithTimesModel GetByHtml(string pageHtml);
-
-        /// <summary>
-        /// Получает страницу по url и преобразует строку с html-кодом страницы
-        /// в объект типа <see cref="CalendarWithTimesModel" /> (Ical.Net).
-        /// <br />
-        /// У календаря заполняются поля Name и Events, содержащее события. У события заполняются только атрибуты:
-        /// <list type="bullet">
-        ///     <item> Name </item>
-        ///     <item> Categories </item>
-        ///     <item> Contacts </item>
-        ///     <item> Location </item>
-        ///     <item> Description </item>
-        ///     <item> DtStart </item>
-        ///     <item> DtEnd </item>
-        ///     <item> Duration </item>
-        /// </list>
-        /// </summary>
         /// <param name="link">Url получаемой страницы.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        CalendarWithTimesModel GetByLink(string link);
+        Task<CalendarWithTimesModel> GetByLinkAsync(string link);
 
         /// <summary>
         /// Получает страницу по url и преобразует строку с html-кодом страницы
@@ -68,7 +49,7 @@ namespace HRAshton.TimeElite.RaspTpuParser
         /// <param name="skipBetweenCurrentWeekAndAfter">Количество недель (включая текущую), которые должны быть пропущены.</param>
         /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        CalendarWithTimesModel GetByLink(
+        Task<CalendarWithTimesModel> GetByLinkAsync(
             string link,
             byte before,
             byte skipBetweenCurrentWeekAndAfter,
@@ -92,7 +73,7 @@ namespace HRAshton.TimeElite.RaspTpuParser
         /// </summary>
         /// <param name="hash">Хэш-код расписания.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        CalendarWithTimesModel GetByHash(string hash);
+        Task<CalendarWithTimesModel> GetByHashAsync(string hash);
 
         /// <summary>
         /// Получает страницу по hash и возвращает расписание - объект типа <see cref="CalendarWithTimesModel" />
@@ -117,7 +98,7 @@ namespace HRAshton.TimeElite.RaspTpuParser
         /// </param>
         /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        CalendarWithTimesModel GetByHash(
+        Task<CalendarWithTimesModel> GetByHashAsync(
             string hash,
             byte before,
             byte skipBetweenCurrentWeekAndAfter,
@@ -144,7 +125,7 @@ namespace HRAshton.TimeElite.RaspTpuParser
         /// учитывается.
         /// </param>
         /// <returns>Календарь с названием и событиями.</returns>
-        CalendarWithTimesModel GetByQuery(string query);
+        Task<CalendarWithTimesModel> GetByQueryAsync(string query);
 
         /// <summary>
         /// Получает страницу по точному совпадению в поиске (<paramref name="query" />) и преобразует строку
@@ -172,7 +153,7 @@ namespace HRAshton.TimeElite.RaspTpuParser
         /// </param>
         /// <param name="after">Количество календарей после переданного, события которых нужно включить.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        CalendarWithTimesModel GetByQuery(
+        Task<CalendarWithTimesModel> GetByQueryAsync(
             string query,
             byte before,
             byte skipBetweenCurrentWeekAndAfter,
@@ -183,6 +164,6 @@ namespace HRAshton.TimeElite.RaspTpuParser
         /// </summary>
         /// <param name="query">Запрос для поиска.</param>
         /// <returns>Перечисление результатов.</returns>
-        SearchResultItemModel[] GetSearchResults(string query);
+        Task<SearchResultItemModel[]> GetSearchResultsAsync(string query);
     }
 }

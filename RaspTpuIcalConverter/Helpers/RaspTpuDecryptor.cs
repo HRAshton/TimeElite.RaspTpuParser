@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 namespace HRAshton.TimeElite.RaspTpuParser.Helpers
@@ -26,9 +27,10 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
         /// </summary>
         /// <param name="html">HTML-документ.</param>
         /// <param name="key">Xor-ключ.</param>
-        public void DecryptAll(HtmlDocument html, byte[] key = null)
+        /// <returns>Задача, представляющая асинхронную операцию.</returns>
+        public async Task DecryptAllAsync(HtmlDocument html, byte[] key = null)
         {
-            key ??= ParseKey(html);
+            key ??= await FetchXorKeyAsync(html);
 
             var nodesWithEncryptedInnerText = html.DocumentNode.SelectNodes("//*[@data-encrypt]");
             foreach (var htmlNode in nodesWithEncryptedInnerText)
@@ -38,12 +40,12 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
             }
         }
 
-        private byte[] ParseKey(HtmlDocument html)
+        private async Task<byte[]> FetchXorKeyAsync(HtmlDocument html)
         {
             string requestKey = GetMetaTagContent(html, "encrypt");
             string csrfToken = GetMetaTagContent(html, "csrf-token");
 
-            var receivedKey = XorKeyFetcher.FetchXorKey(requestKey, csrfToken);
+            var receivedKey = await XorKeyFetcher.FetchXorKeyAsync(requestKey, csrfToken);
 
             var keyBytes = receivedKey
                 .ToCharArray()

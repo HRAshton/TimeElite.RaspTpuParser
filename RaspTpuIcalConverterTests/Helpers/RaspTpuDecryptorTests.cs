@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Text;
-using System.Text.Unicode;
+using System.Threading.Tasks;
 using HRAshton.TimeElite.RaspTpuParser.Helpers;
 using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,16 +21,16 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests.Helpers
 
         [TestMethod]
         [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8k24_2022_1.html")]
-        public void DecryptAllTest()
+        public async Task DecryptAllTest()
         {
             const string path = @"Asserts\8k24_2022_1.html";
-            var html = File.ReadAllText(path);
+            var html = await File.ReadAllTextAsync(path);
             var key = Encoding.UTF8.GetBytes("hVgilyimNiWSxRkx");
 
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            decryptor.DecryptAll(doc, key);
+            await decryptor.DecryptAllAsync(doc, key);
             var nodes = doc.DocumentNode.SelectNodes("//*[@data-encrypt]");
 
             Assert.IsNotNull(nodes);

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using HRAshton.TimeElite.RaspTpuParser.Extensions;
 using HRAshton.TimeElite.RaspTpuParser.Helpers;
 using HRAshton.TimeElite.RaspTpuParser.Models;
@@ -35,28 +36,13 @@ namespace HRAshton.TimeElite.RaspTpuParser
         private RaspTpuDecryptor RaspTpuDecryptor { get; }
 
         /// <inheritdoc/>
-        public CalendarWithTimesModel GetByHtml(string pageHtml)
+        public Task<CalendarWithTimesModel> GetByLinkAsync(string link)
         {
-            var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(pageHtml);
-
-            RaspTpuDecryptor.DecryptAll(htmlDocument);
-
-            var calendarWithTimesModel = PageParser.ParsePage(htmlDocument);
-
-            return calendarWithTimesModel;
+            return GetByLinkAsync(link, 0, 0, 0);
         }
 
         /// <inheritdoc/>
-        public CalendarWithTimesModel GetByLink(string link)
-        {
-            var mainCalendar = GetByLink(link, 0, 0, 0);
-
-            return mainCalendar;
-        }
-
-        /// <inheritdoc/>
-        public CalendarWithTimesModel GetByLink(
+        public async Task<CalendarWithTimesModel> GetByLinkAsync(
             string link,
             byte before,
             byte skipBetweenCurrentWeekAndAfter,
@@ -68,50 +54,46 @@ namespace HRAshton.TimeElite.RaspTpuParser
             }
 
             var urls = UrlHelper.CreateUrls(link, before, skipBetweenCurrentWeekAndAfter, after);
-            var mainCalendar = GetJoinedCalendarByUrls(urls);
+            var mainCalendar = await GetJoinedCalendarByUrlsAsync(urls);
 
             return mainCalendar;
         }
 
         /// <inheritdoc/>
-        public CalendarWithTimesModel GetByHash(string hash)
+        public Task<CalendarWithTimesModel> GetByHashAsync(string hash)
         {
-            var mainCalendar = GetByHash(hash, 0, 0, 0);
-
-            return mainCalendar;
+            return GetByHashAsync(hash, 0, 0, 0);
         }
 
         /// <inheritdoc/>
-        public CalendarWithTimesModel GetByHash(
+        public async Task<CalendarWithTimesModel> GetByHashAsync(
             string hash,
             byte before,
             byte skipBetweenCurrentWeekAndAfter,
             byte after)
         {
             var hashedLink = RaspTpuUrlHelper.CreateFromHash(hash);
-            var trueUrl = HttpClient.GetFinalRedirect(hashedLink);
+            var trueUrl = await HttpClient.GetFinalRedirectAsync(hashedLink);
             var urls = UrlHelper.CreateUrls(trueUrl, before, skipBetweenCurrentWeekAndAfter, after);
-            var mainCalendar = GetJoinedCalendarByUrls(urls);
+            var mainCalendar = await GetJoinedCalendarByUrlsAsync(urls);
 
             return mainCalendar;
         }
 
         /// <inheritdoc/>
-        public CalendarWithTimesModel GetByQuery(string query)
+        public Task<CalendarWithTimesModel> GetByQueryAsync(string query)
         {
-            var calendar = GetByQuery(query, 0, 0, 0);
-
-            return calendar;
+            return GetByQueryAsync(query, 0, 0, 0);
         }
 
         /// <inheritdoc/>
-        public CalendarWithTimesModel GetByQuery(
+        public async Task<CalendarWithTimesModel> GetByQueryAsync(
             string query,
             byte before,
             byte skipBetweenCurrentWeekAndAfter,
             byte after)
         {
-            var searchResults = GetSearchResults(query);
+            var searchResults = await GetSearchResultsAsync(query);
 
             var trueResult = searchResults
                 .FirstOrDefault(item => string.Compare(item.Text, 0, query, 0, item.Text.Length, true) == 0);
@@ -121,38 +103,71 @@ namespace HRAshton.TimeElite.RaspTpuParser
             }
 
             var hashedLink = RaspTpuUrlHelper.CreateFromRelationPath(trueResult.Url);
-            var trueUrl = HttpClient.GetFinalRedirect(hashedLink);
+            var trueUrl = await HttpClient.GetFinalRedirectAsync(hashedLink);
 
-            var calendar = GetByLink(trueUrl, before, skipBetweenCurrentWeekAndAfter, after);
+            var calendar = await GetByLinkAsync(trueUrl, before, skipBetweenCurrentWeekAndAfter, after);
 
             return calendar;
         }
 
         /// <inheritdoc/>
-        public SearchResultItemModel[] GetSearchResults(string query)
+        public async Task<SearchResultItemModel[]> GetSearchResultsAsync(string query)
         {
             var queryUrl = RaspTpuUrlHelper.CreateQuery(query);
-            var queryResultJson = HttpClient.GetRequestContent(queryUrl);
+            var queryResultJson = await HttpClient.GetStringAsync(queryUrl);
             var queryResult = JsonConvert.DeserializeObject<SearchResultModel>(queryResultJson);
             var result = queryResult.Result;
 
             return result;
         }
 
-        private CalendarWithTimesModel GetJoinedCalendarByUrls(IEnumerable<string> urls)
+        private async Task<CalendarWithTimesModel> GetJoinedCalendarByUrlsAsync(IEnumerable<string> urls)
         {
-            var calendars = urls
-                .Select(HttpClient.GetRequestContent)
-                .Select(GetByHtml)
-                .ToList();
+            var calendars = await FetchCalendarsAsync(urls);
 
-            var mainCalendar = calendars.First();
-            calendars
-                .Skip(1)
-                .ToList()
-                .ForEach(x => mainCalendar.Events.AddRange(x.Events));
+            var mainCalendar = MergeCalendars(calendars);
 
             return mainCalendar;
+        }
+
+        private async Task<CalendarWithTimesModel[]> FetchCalendarsAsync(IEnumerable<string> urls)
+        {
+            var tasks = urls
+                .Select(GetByHtmlAsync)
+                .ToArray();
+
+            await Task.WhenAll(tasks);
+
+            var calendars = tasks
+                .Select(task => task.Result)
+                .ToArray();
+
+            return calendars;
+        }
+
+        private static CalendarWithTimesModel MergeCalendars(CalendarWithTimesModel[] calendars)
+        {
+            var mainCalendar = calendars.First();
+            foreach (var secondaryCalendar in calendars.Skip(1))
+            {
+                mainCalendar.Events.AddRange(secondaryCalendar.Events);
+            }
+
+            return mainCalendar;
+        }
+
+        private async Task<CalendarWithTimesModel> GetByHtmlAsync(string url)
+        {
+            await using var stream = await HttpClient.GetStreamAsync(url);
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.Load(stream);
+
+            await RaspTpuDecryptor.DecryptAllAsync(htmlDocument);
+
+            var calendarWithTimesModel = PageParser.ParsePage(htmlDocument);
+
+            return calendarWithTimesModel;
         }
     }
 }
