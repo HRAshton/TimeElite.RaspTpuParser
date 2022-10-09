@@ -8,7 +8,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
     /// <summary>
     /// Набор функций для работы с Url и сетью.
     /// </summary>
-    internal class UrlHelper
+    internal static class UrlHelper
     {
         /// <summary>
         /// Проверяет, является ли строка абсолютным Url.
