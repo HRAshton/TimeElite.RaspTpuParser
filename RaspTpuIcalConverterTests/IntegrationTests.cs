@@ -67,9 +67,19 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
 
             var threeLastDaysOnly = result.Events.All(lsn => lsn.DtStart.Day is >= 1 and <= 3);
 
+            var testingLessons = result.Events
+                .Where(evt => evt.Name == "Входное независимое тестирование")
+                .ToArray();
+            var twoSameTestingLessons = testingLessons.Length == 2
+                                        && testingLessons[0].DtStart.Date.DayOfWeek ==
+                                        testingLessons[1].DtStart.Date.DayOfWeek
+                                        && testingLessons[0].Description ==
+                                        testingLessons[1].Description;
+
             CheckCommonHealth(result);
             Assert.AreEqual("8К24", result.Name);
             Assert.IsTrue(threeLastDaysOnly);
+            Assert.IsTrue(twoSameTestingLessons);
         }
 
         /// <summary>

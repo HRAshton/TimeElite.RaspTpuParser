@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>HRAshton.TimeElite.RaspTpuParser</AssemblyName>
     <RootNamespace>HRAshton.TimeElite.RaspTpuParser</RootNamespace>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Company>EliteApp</Company>
     <Authors>HRAshton</Authors>
     <Product>TimeElite</Product>
@@ -21,6 +21,7 @@
     <PackageReleaseNotes>- в модели результата присутствует поле со списком времени начала пар;</PackageReleaseNotes>
     <FileVersion>1.3.0.0</FileVersion>
     <PackageVersion>1.3.0</PackageVersion>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\StyleCopConfiguration.props" />

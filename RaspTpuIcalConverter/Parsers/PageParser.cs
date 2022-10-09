@@ -56,7 +56,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Parsers
         private static string ParseCalendarName(HtmlDocument doc)
         {
             var title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText
-                            .Split("/")
+                            .Split('/')
                             .FirstOrDefault()
                         ?? "[ ?? ]";
 
@@ -222,20 +222,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Parsers
 
                 if (shortName == string.Empty)
                 {
-                    for (var j = i; j >= 0; j--)
-                    {
-                        shortName = new string(hrGroups[j]
-                            .Select(x => x.InnerText)
-                            .FirstOrDefault(x => x.Contains('('))
-                            ?.TakeWhile(ch => ch != '(')
-                            .SkipLast(1) // space
-                            .ToArray() ?? Array.Empty<char>());
-
-                        if (shortName != string.Empty)
-                        {
-                            break;
-                        }
-                    }
+                    shortName = FindShortNameInGroups(i, hrGroups);
                 }
 
                 var type = bWithType?.InnerText.Trim() ?? string.Empty;
@@ -245,12 +232,12 @@ namespace HRAshton.TimeElite.RaspTpuParser.Parsers
                 var locationFragments = group.Select(x => locationRegex.Match(x.InnerText))
                     .FirstOrDefault(x => x.Success)
                     ?.Groups
-                    .Values
+                    .Cast<Group>()
                     .Skip(1)
                     .Select(x => x.Value)
                     .ToArray();
                 var location = locationFragments != null
-                    ? string.Join('-', locationFragments)
+                    ? string.Join("-", locationFragments)
                     : string.Empty;
 
                 var calendarEvent = new CalendarEvent
@@ -268,6 +255,30 @@ namespace HRAshton.TimeElite.RaspTpuParser.Parsers
             }
 
             return events;
+        }
+
+        private static string FindShortNameInGroups(int i, IReadOnlyList<List<HtmlNode>> hrGroups)
+        {
+            for (var j = i; j >= 0; j--)
+            {
+                var nameNodeText = hrGroups[j]
+                    .Select(node => node.InnerText)
+                    .FirstOrDefault(text => text.Contains('('));
+
+                if (nameNodeText is null)
+                {
+                    continue;
+                }
+
+                var shortName = nameNodeText
+                    .Split('(')
+                    .First()
+                    .Trim();
+
+                return shortName;
+            }
+
+            return string.Empty;
         }
 
         private static List<DayOfWeek> GetHolidays(IEnumerable<HtmlNode> rows)

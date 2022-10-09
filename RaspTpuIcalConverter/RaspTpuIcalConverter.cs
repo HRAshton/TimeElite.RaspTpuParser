@@ -158,7 +158,7 @@ namespace HRAshton.TimeElite.RaspTpuParser
 
         private async Task<CalendarWithTimesModel> GetByHtmlAsync(string url)
         {
-            await using var stream = await HttpClient.GetStreamAsync(url);
+            using var stream = await HttpClient.GetStreamAsync(url);
 
             var htmlDocument = new HtmlDocument();
             htmlDocument.Load(stream);
