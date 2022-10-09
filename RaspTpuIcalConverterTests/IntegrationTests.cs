@@ -98,6 +98,34 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         }
 
         /// <summary>
+        /// Тест получения расписания преподавателя по ссылке с отступом по неделям. Успешный.
+        /// Получает расписания с 17.09 до 10.10, пропуская переданную неделю (21.09-26.09).
+        /// </summary>
+        /// <returns>Задача, представляющая асинхронную операцию.</returns>
+        [Test]
+        public async Task GetByHtmlTest_RodinaWithOffsets_FilledDays()
+        {
+            const string url = "https://rasp.tpu.ru/user_296870/2020/4/view.html";
+
+            var result = await raspTpuIcalConverter.GetByLinkAsync(
+                link: url,
+                before: 2,
+                skipBetweenCurrentWeekAndAfter: 1,
+                after: 2);
+
+            var allEventsNamesValid = result.Events.All(evt => evt.Name == "Практ.психология");
+
+            CheckCommonHealth(result);
+            Assert.IsTrue(allEventsNamesValid);
+            Assert.AreEqual(2, result.Events.Count(evt => evt.DtStart.Day == 8));
+            Assert.AreEqual(1, result.Events.Count(evt => evt.DtStart.Day == 6));
+            Assert.AreEqual(0, result.Events.Count(evt => evt.DtStart.Day == 1)); // Текущая неделя пропущена
+            Assert.AreEqual(2, result.Events.Count(evt => evt.DtStart.Day == 24));
+            Assert.AreEqual(1, result.Events.Count(evt => evt.DtStart.Day == 22));
+            Assert.AreEqual(1, result.Events.Count(evt => evt.DtStart.Day == 17));
+        }
+
+        /// <summary>
         /// Тест получения результатов поиска. Без результатов.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>

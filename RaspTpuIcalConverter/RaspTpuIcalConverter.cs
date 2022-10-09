@@ -132,17 +132,15 @@ namespace HRAshton.TimeElite.RaspTpuParser
 
         private async Task<CalendarWithTimesModel[]> FetchCalendarsAsync(IEnumerable<string> urls)
         {
-            var tasks = urls
-                .Select(GetByHtmlAsync)
-                .ToArray();
+            var calendars = new List<CalendarWithTimesModel>();
 
-            await Task.WhenAll(tasks);
+            foreach (var url in urls)
+            {
+                var calendar = await GetByHtmlAsync(url);
+                calendars.Add(calendar);
+            }
 
-            var calendars = tasks
-                .Select(task => task.Result)
-                .ToArray();
-
-            return calendars;
+            return calendars.ToArray();
         }
 
         private static CalendarWithTimesModel MergeCalendars(CalendarWithTimesModel[] calendars)
