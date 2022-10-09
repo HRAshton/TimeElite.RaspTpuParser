@@ -33,6 +33,11 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
             key ??= await FetchXorKeyAsync(html);
 
             var nodesWithEncryptedInnerText = html.DocumentNode.SelectNodes("//*[@data-encrypt]");
+            if (nodesWithEncryptedInnerText is null)
+            {
+                return;
+            }
+
             foreach (var htmlNode in nodesWithEncryptedInnerText)
             {
                 DecodeInnerTexts(htmlNode, key);
