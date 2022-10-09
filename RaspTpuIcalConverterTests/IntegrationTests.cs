@@ -6,14 +6,13 @@ using HRAshton.TimeElite.RaspTpuParser.Helpers;
 using HRAshton.TimeElite.RaspTpuParser.Models;
 using HRAshton.TimeElite.RaspTpuParser.Parsers;
 using Ical.Net;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace HRAshton.TimeElite.RaspTpuParser.Tests
 {
     /// <summary>
     /// Интеграционные тесты библиотеки.
     /// </summary>
-    [TestClass]
     public class IntegrationTests
     {
         private RaspTpuIcalConverter raspTpuIcalConverter;
@@ -21,7 +20,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// <summary>
         /// Инициализация тестов.
         /// </summary>
-        [TestInitialize]
+        [SetUp]
         public void Init()
         {
             var client = new HttpClient();
@@ -35,7 +34,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// Тест получения расписания по названию группы. Успешный.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>
-        [TestMethod]
+        [Test]
         public async Task GetByQueryTest_RightGroupNameExample_NotNullGregorianCalendarReturned()
         {
             var result = await raspTpuIcalConverter.GetByQueryAsync("8Т01");
@@ -47,7 +46,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// Тест получения расписания по названию группы. Провальный.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>
-        [TestMethod]
+        [Test]
         public async Task GetByQueryTest_WrongGroupNameExample_NotNullGregorianCalendarReturned()
         {
             object result = await raspTpuIcalConverter.GetByQueryAsync("0000");
@@ -59,14 +58,14 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// Тест получения расписания группы по ссылке. Успешный.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>
-        [TestMethod]
-        public async Task GetByLinkTest_8k24WithHolidays_TrueCalendar()
+        [Test]
+        public async Task GetByHtmlTest_8k24WithHolidays_TrueCalendar()
         {
             const string url = "https://rasp.tpu.ru/gruppa_39211/2022/1/view.html";
 
             var result = await raspTpuIcalConverter.GetByLinkAsync(url);
 
-            var threeLastDaysOnly = result.Events.All(lsn => lsn.DtStart.Day >= 1 && lsn.DtStart.Day <= 3);
+            var threeLastDaysOnly = result.Events.All(lsn => lsn.DtStart.Day is >= 1 and <= 3);
 
             CheckCommonHealth(result);
             Assert.AreEqual("8К24", result.Name);
@@ -77,8 +76,8 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// Тест получения расписания преподавателя по ссылке. Успешный.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>
-        [TestMethod]
-        public async Task GetByLinkTest_Rodina_ConsultationIsNotEmpty()
+        [Test]
+        public async Task GetByHtmlTest_Rodina_ConsultationIsNotEmpty()
         {
             const string url = "https://rasp.tpu.ru/user_296870/2020/4/view.html";
             var result = await raspTpuIcalConverter.GetByLinkAsync(url);
@@ -92,7 +91,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// Тест получения результатов поиска. Без результатов.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>
-        [TestMethod]
+        [Test]
         public async Task GetByQueryTest_ReturnsEmpty()
         {
             var result = await raspTpuIcalConverter.GetSearchResultsAsync("Hello There!");
@@ -105,7 +104,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// Учитывается только количество результатов.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>
-        [TestMethod]
+        [Test]
         public async Task GetByQueryTest_ReturnsSingleResult()
         {
             var result = await raspTpuIcalConverter.GetSearchResultsAsync("8т01");
@@ -118,7 +117,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         /// Учитывается идентификатор группы.
         /// </summary>
         /// <returns>Задача, представляющая асинхронную операцию.</returns>
-        [TestMethod]
+        [Test]
         public async Task GetByQueryTest_ResultExists()
         {
             var result = await raspTpuIcalConverter.GetSearchResultsAsync("это20ф");
@@ -130,7 +129,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         {
             // Вернулся валидный календарь.
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(Calendar));
+            Assert.IsInstanceOf<Calendar>(result);
 
             // Имя календаря не содержит двух пробелов подряд.
             Assert.IsFalse(Regex.IsMatch(result.Name, @"\s\s"));

@@ -1,36 +1,33 @@
-﻿using System.IO;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using HRAshton.TimeElite.RaspTpuParser.Helpers;
 using HtmlAgilityPack;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace HRAshton.TimeElite.RaspTpuParser.Tests.Helpers
 {
-    [TestClass]
     public class RaspTpuDecryptorTests
     {
         private RaspTpuDecryptor decryptor;
 
-        [TestInitialize]
+        [SetUp]
         public void Init()
         {
             decryptor = new RaspTpuDecryptor(new XorKeyFetcher(new HttpClient()));
         }
 
-        [TestMethod]
-        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8k24_2022_1.html")]
+        [Test]
         public async Task DecryptAllTest()
         {
             const string path = @"Asserts\8k24_2022_1.html";
-            var html = await File.ReadAllTextAsync(path);
             var key = Encoding.UTF8.GetBytes("hVgilyimNiWSxRkx");
 
             var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            doc.Load(path);
 
             await decryptor.DecryptAllAsync(doc, key);
+
             var nodes = doc.DocumentNode.SelectNodes("//*[@data-encrypt]");
 
             Assert.IsNotNull(nodes);
