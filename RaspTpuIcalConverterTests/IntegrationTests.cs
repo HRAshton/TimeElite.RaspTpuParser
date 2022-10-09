@@ -1,19 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using HRAshton.TimeElite.RaspTpuParser.RaspTpuModels;
+using HRAshton.TimeElite.RaspTpuParser.Helpers;
+using HRAshton.TimeElite.RaspTpuParser.Models;
+using HRAshton.TimeElite.RaspTpuParser.Parsers;
 using Ical.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HRAshton.TimeElite.RaspTpuParser.Tests
 {
     /// <summary>
-    /// Тесты модуля парсинга расписания.
+    /// Интеграционные тесты библиотеки.
     /// </summary>
     [TestClass]
-    public class RaspTruIcalConverterTests
+    public class IntegrationTests
     {
         private RaspTpuIcalConverter raspTpuIcalConverter;
 
@@ -24,8 +24,10 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         public void Init()
         {
             var client = new HttpClient();
+            var pageParser = new PageParser();
+            var raspTpuDecryptor = new RaspTpuDecryptor(new XorKeyFetcher(client));
 
-            raspTpuIcalConverter = new RaspTpuIcalConverter(client);
+            raspTpuIcalConverter = new RaspTpuIcalConverter(client, pageParser, raspTpuDecryptor);
         }
 
         /// <summary>
@@ -51,38 +53,24 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         }
 
         /// <summary>
-        /// Тест получения расписания по содержимому html-страницы. Успешный.
+        /// Тест получения расписания группы по ссылке. Успешный.
         /// </summary>
         [TestMethod]
-        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8t01_2020_4.html")]
-        public void GetByHtmlTest_8t01mock_TrueCalendar()
+        public void GetByHtmlTest_8k24WithHolidays_TrueCalendar()
         {
-            const string path = @"Asserts\8t01_2020_4.html";
-            var html = File.ReadAllText(path);
+            const string url = "https://rasp.tpu.ru/gruppa_39211/2022/1/view.html";
 
-            var result = raspTpuIcalConverter.GetByHtml(html);
+            var result = raspTpuIcalConverter.GetByLink(url);
+
+            var threeLastDaysOnly = result.Events.All(lsn => lsn.DtStart.Day >= 1 && lsn.DtStart.Day <= 3);
 
             CheckCommonHealth(result);
+            Assert.AreEqual("8К24", result.Name);
+            Assert.IsTrue(threeLastDaysOnly);
         }
 
         /// <summary>
-        /// Тест получения расписания с выходными днями по содержимому html-страницы. Успешный.
-        /// </summary>
-        [TestMethod]
-        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8t01_2020_10.html")]
-        public void GetByHtmlTest_8b61mockWithHoliday_TrueCalendar()
-        {
-            const string path = @"Asserts\8t01_2020_10.html";
-            var html = File.ReadAllText(path);
-            var result = raspTpuIcalConverter.GetByHtml(html);
-
-            CheckCommonHealth(result);
-
-            Assert.IsTrue(result.Events.All(x => x.DtStart.Date.DayOfWeek != DayOfWeek.Wednesday));
-        }
-
-        /// <summary>
-        /// Тест получения расписания по ссылке. Успешный.
+        /// Тест получения расписания преподавателя по ссылке. Успешный.
         /// </summary>
         [TestMethod]
         public void GetByHtmlTest_Rodina_ConsultationIsNotEmpty()
@@ -115,7 +103,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         {
             var result = raspTpuIcalConverter.GetSearchResults("8т01");
 
-            Assert.IsTrue(result.Count() == 1);
+            Assert.AreEqual(1, result.Length);
         }
 
         /// <summary>
@@ -127,7 +115,7 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests
         {
             var result = raspTpuIcalConverter.GetSearchResults("это20ф");
 
-            Assert.IsTrue(result.Count(x => x.Id == 18482) == 1);
+            Assert.AreEqual(1, result.Count(item => item.Id == 18482));
         }
 
         private static void CheckCommonHealth(CalendarWithTimesModel result)

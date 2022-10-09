@@ -1,4 +1,6 @@
-﻿namespace HRAshton.TimeElite.RaspTpuParser.RaspTpuModels
+﻿using HRAshton.TimeElite.RaspTpuParser.Helpers;
+
+namespace HRAshton.TimeElite.RaspTpuParser.Models
 {
     /// <summary>
     /// Модель Url расписания.
@@ -22,15 +24,5 @@
         /// <example>pomeschenie_1960</example>
         /// </summary>
         public byte Week { get; set; }
-
-        /// <summary>
-        /// Получить измененную Url по смещению номера недели.
-        /// </summary>
-        /// <param name="delta">Смещение номера недели.</param>
-        /// <returns>Измененный Url.</returns>
-        public string GetUrlForWeek(int delta)
-        {
-            return $"https://rasp.tpu.ru/{Id}/{Year}/{Week + delta}/view.html";
-        }
     }
 }

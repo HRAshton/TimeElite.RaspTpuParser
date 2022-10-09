@@ -5,8 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HRAshton.TimeElite.RaspTpuParser.Extensions;
-using HRAshton.TimeElite.RaspTpuParser.Helpers;
-using HRAshton.TimeElite.RaspTpuParser.RaspTpuModels;
+using HRAshton.TimeElite.RaspTpuParser.Models;
 using HtmlAgilityPack;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
@@ -33,24 +32,18 @@ namespace HRAshton.TimeElite.RaspTpuParser.Parsers
         /// <item> DtEnd </item>
         /// <item> Duration </item>
         /// </list>
-        /// <param name="html">Строка с html-кодом страницы.</param>
+        /// <param name="htmlDocument">Документ со страницей Расписания.</param>
         /// <returns>Календарь с названием и событиями.</returns>
-        public CalendarWithTimesModel ParsePage(string html)
+        public CalendarWithTimesModel ParsePage(HtmlDocument htmlDocument)
         {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            var decryptor = new RaspTpuDecryptor();
-            decryptor.DecryptAll(ref doc);
-
-            var tableNode = doc
+            var tableNode = htmlDocument
                 .GetElementbyId("raspisanie-table")
                 .ChildNodes
                 .FirstOrDefault(node => node.NodeType == HtmlNodeType.Element);
 
             var monday = GetMonday(tableNode);
 
-            var name = ParseCalendarName(doc);
+            var name = ParseCalendarName(htmlDocument);
 
             var tbody = tableNode?.ChildNodes
                 .LastOrDefault(node => node.NodeType == HtmlNodeType.Element); // tbody

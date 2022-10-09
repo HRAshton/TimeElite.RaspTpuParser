@@ -1,4 +1,7 @@
 ﻿using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Text.Unicode;
 using HRAshton.TimeElite.RaspTpuParser.Helpers;
 using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,37 +16,28 @@ namespace HRAshton.TimeElite.RaspTpuParser.Tests.Helpers
         [TestInitialize]
         public void Init()
         {
-            decryptor = new RaspTpuDecryptor();
-            decryptor.SetKey("BhAXvvd1pJd6CZJS");
+            decryptor = new RaspTpuDecryptor(new XorKeyFetcher(new HttpClient()));
         }
 
         [TestMethod]
-        public void DecryptTest()
-        {
-            var text = decryptor.Decrypt("0a/RitGfakbRkg==");
-
-            Assert.IsTrue(text == "ЭТО20Ф");
-        }
-
-        [TestMethod]
-        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8t01_2020_10.html")]
+        [DeploymentItem(@"RaspTpuIcalConverterTests\Asserts\8k24_2022_1.html")]
         public void DecryptAllTest()
         {
-            const string path = @"Asserts\8t01_2020_10.html";
+            const string path = @"Asserts\8k24_2022_1.html";
             var html = File.ReadAllText(path);
+            var key = Encoding.UTF8.GetBytes("hVgilyimNiWSxRkx");
 
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            decryptor.DecryptAll(ref doc);
-
+            decryptor.DecryptAll(doc, key);
             var nodes = doc.DocumentNode.SelectNodes("//*[@data-encrypt]");
 
             Assert.IsNotNull(nodes);
             Assert.IsTrue(nodes.Count >= 2);
-            Assert.IsTrue(nodes[0].InnerText == "8Т01");
-            Assert.IsTrue(nodes[1].InnerText == "Химия 1");
-            Assert.IsTrue(nodes[1].Attributes["title"].Value == "Химия 1");
+            Assert.IsTrue(nodes[0].InnerText == "8К24");
+            Assert.IsTrue(nodes[1].InnerText == "Соц.осн.инж. проект.");
+            Assert.IsTrue(nodes[1].Attributes["title"].Value == "Социальные основы инженерного проектирования");
         }
     }
 }

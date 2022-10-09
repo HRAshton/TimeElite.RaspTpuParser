@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace HRAshton.TimeElite.RaspTpuParser.RaspTpuModels
+namespace HRAshton.TimeElite.RaspTpuParser.Models
 {
     /// <summary>
     /// Модель элемента результата поиска.
     /// </summary>
     [Serializable]
-    public class QueryResultItemModel
+    public class SearchResultItemModel
     {
         /// <summary>
         /// Числовой идентификатор объекта.

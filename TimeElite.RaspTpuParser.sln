@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaspTpuIcalConverterTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaspTpuIcalConverter", "RaspTpuIcalConverter\RaspTpuIcalConverter.csproj", "{638F43CD-4001-4D26-B6BB-FF58ABCC782D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces", "Interfaces\Interfaces.csproj", "{F4D919C9-0DF9-46A0-849A-4AB43DC4CF13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{638F43CD-4001-4D26-B6BB-FF58ABCC782D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{638F43CD-4001-4D26-B6BB-FF58ABCC782D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{638F43CD-4001-4D26-B6BB-FF58ABCC782D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4D919C9-0DF9-46A0-849A-4AB43DC4CF13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4D919C9-0DF9-46A0-849A-4AB43DC4CF13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4D919C9-0DF9-46A0-849A-4AB43DC4CF13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4D919C9-0DF9-46A0-849A-4AB43DC4CF13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

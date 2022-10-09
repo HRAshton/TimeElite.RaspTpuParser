@@ -8,44 +8,89 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
     /// <summary>
     /// Дешифратор зашифрованных XOR-ом тегов (с названиями пар).
     /// </summary>
-    public class RaspTpuDecryptor
+    internal class RaspTpuDecryptor
     {
-        private byte[] key;
-
         /// <summary>
-        /// Установить ключ.
+        /// Конструктор.
         /// </summary>
-        /// <param name="keyValue">Ключ в строковом формате.</param>
-        public void SetKey(string keyValue)
+        /// <param name="xorKeyFetcher">Помощник для получения xor-ключей с сайта Расписания.</param>
+        public RaspTpuDecryptor(XorKeyFetcher xorKeyFetcher)
         {
-            key = keyValue
-                .ToCharArray()
-                .Select(x => (byte)x)
-                .ToArray();
+            XorKeyFetcher = xorKeyFetcher;
         }
+
+        private XorKeyFetcher XorKeyFetcher { get; }
 
         /// <summary>
         /// Подменить InnerText зашифрованных тегов.
         /// </summary>
         /// <param name="html">HTML-документ.</param>
-        public void DecryptAll(ref HtmlDocument html)
+        /// <param name="key">Xor-ключ.</param>
+        public void DecryptAll(HtmlDocument html, byte[] key = null)
         {
-            ParseAndStoreKey(html);
+            key ??= ParseKey(html);
 
             var nodesWithEncryptedInnerText = html.DocumentNode.SelectNodes("//*[@data-encrypt]");
             foreach (var htmlNode in nodesWithEncryptedInnerText)
             {
-                DecodeInnerTexts(htmlNode);
-                DecodeTitles(htmlNode);
+                DecodeInnerTexts(htmlNode, key);
+                DecodeTitles(htmlNode, key);
             }
+        }
+
+        private byte[] ParseKey(HtmlDocument html)
+        {
+            string requestKey = GetMetaTagContent(html, "encrypt");
+            string csrfToken = GetMetaTagContent(html, "csrf-token");
+
+            var receivedKey = XorKeyFetcher.FetchXorKey(requestKey, csrfToken);
+
+            var keyBytes = receivedKey
+                .ToCharArray()
+                .Select(chr => (byte)chr)
+                .ToArray();
+
+            return keyBytes;
+        }
+
+        private static string GetMetaTagContent(HtmlDocument html, string name)
+        {
+            return html.DocumentNode
+                .SelectSingleNode($"//meta[@name='{name}']")
+                .Attributes["content"]
+                .Value;
+        }
+
+        private void DecodeInnerTexts(HtmlNode htmlNode, byte[] key)
+        {
+            var ciphertext = htmlNode.Attributes["data-encrypt"].Value;
+            var plainText = Decrypt(ciphertext, key);
+
+            htmlNode.ChildNodes.Clear();
+            htmlNode.ChildNodes.Add(HtmlNode.CreateNode(plainText));
+        }
+
+        private void DecodeTitles(HtmlNode htmlNode, byte[] key)
+        {
+            var encodedTitleAttr = htmlNode.Attributes.FirstOrDefault(attr => attr.Name == "data-title");
+            if (encodedTitleAttr == null)
+            {
+                return;
+            }
+
+            var encodedTitle = encodedTitleAttr.Value;
+            var plainTitle = Decrypt(encodedTitle, key);
+
+            htmlNode.SetAttributeValue("title", plainTitle);
         }
 
         /// <summary>
         /// Расшифровать текст.
         /// </summary>
         /// <param name="base64Text">Зашифрованный текст.</param>
+        /// <param name="key">Байты ключа.</param>
         /// <returns>Расшифрованный текст.</returns>
-        public string Decrypt(string base64Text)
+        private string Decrypt(string base64Text, byte[] key)
         {
             var encodedBytes = Convert.FromBase64String(base64Text);
             var encodedChars = Encoding.UTF8.GetString(encodedBytes).ToCharArray();
@@ -57,39 +102,6 @@ namespace HRAshton.TimeElite.RaspTpuParser.Helpers
             var planeText = string.Join(string.Empty, decryptedBytes);
 
             return planeText;
-        }
-
-        private void ParseAndStoreKey(HtmlDocument html)
-        {
-            var keyValue = html.DocumentNode
-                .SelectSingleNode("//meta[@name='encrypt']")
-                .Attributes["content"]
-                .Value;
-
-            SetKey(keyValue);
-        }
-
-        private void DecodeInnerTexts(HtmlNode htmlNode)
-        {
-            var ciphertext = htmlNode.Attributes["data-encrypt"].Value;
-            var plainText = Decrypt(ciphertext);
-
-            htmlNode.ChildNodes.Clear();
-            htmlNode.ChildNodes.Add(HtmlNode.CreateNode(plainText));
-        }
-
-        private void DecodeTitles(HtmlNode htmlNode)
-        {
-            var encodedTitleAttr = htmlNode.Attributes.FirstOrDefault(attr => attr.Name == "data-title");
-            if (encodedTitleAttr == null)
-            {
-                return;
-            }
-
-            var encodedTitle = encodedTitleAttr.Value;
-            var plainTitle = Decrypt(encodedTitle);
-
-            htmlNode.SetAttributeValue("title", plainTitle);
         }
     }
 }
